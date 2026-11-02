@@ -3,7 +3,7 @@
 from collections import Counter
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import subprocess
 import tempfile
 import time
@@ -28,7 +28,9 @@ def _path(value):
         raise VerixError("Scenario paths must be nonempty strings")
     path = PurePosixPath(value)
     if (
-        str(path) != value
+        PureWindowsPath(value).drive
+        or "\\" in value
+        or str(path) != value
         or path.is_absolute()
         or any(part in ("..", ".git", ".verix") for part in path.parts)
         or str(path) == "."
@@ -149,7 +151,9 @@ def _run_case(case):
                         "-c",
                         "commit.gpgsign=false",
                         "-c",
-                        "core.hooksPath=/dev/null",
+                        f"core.hooksPath={root / 'disabled-hooks'}",
+                        "-c",
+                        "core.autocrlf=false",
                         *args,
                     ],
                     check=True,
@@ -171,7 +175,7 @@ def _run_case(case):
                     target.unlink(missing_ok=True)
                 else:
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    target.write_text(content, encoding="utf-8")
+                    target.write_text(content, encoding="utf-8", newline="\n")
 
         git("init", "-q", "--template=")
         git("config", "user.name", "Verix benchmark")

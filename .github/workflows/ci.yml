@@ -5,8 +5,9 @@ permissions:
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -18,11 +19,7 @@ jobs:
       - run: ruff format --check .
       - run: python -m pytest --cov=verix.engine --cov-report=term-missing --cov-fail-under=80
       - run: python -m build
-      - run: |
-          python -m venv /tmp/verix-wheel-test
-          /tmp/verix-wheel-test/bin/pip install dist/*.whl
-          /tmp/verix-wheel-test/bin/verix --help
-          /tmp/verix-wheel-test/bin/verix bench run > "$RUNNER_TEMP/verix-benchmark.json"
+      - run: python scripts/smoke_install.py
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark-${{ matrix.os }}

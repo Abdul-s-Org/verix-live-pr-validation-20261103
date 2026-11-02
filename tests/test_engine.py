@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -36,7 +37,7 @@ class EngineTests(unittest.TestCase):
         )
 
     def write(self, name, content):
-        (self.root / name).write_text(content)
+        (self.root / name).write_text(content, newline="\n")
 
     def claim(self, path="a.py", parents=None, alternative=False):
         paths = [path] if path else []
@@ -132,9 +133,6 @@ class EngineTests(unittest.TestCase):
         for value in ("../outside", ".git/config", "/", "."):
             with self.assertRaises(VerixError):
                 self.engine.repo.path(value)
-        (self.root / "link").symlink_to(self.root / "a.py")
-        with self.assertRaises(VerixError):
-            self.engine.repo.fingerprint("link")
         self.write(".env", "SECRET=hidden")
         with self.assertRaises(VerixError):
             self.engine.observe(self.session, ".env")
@@ -312,8 +310,11 @@ class EngineTests(unittest.TestCase):
         report = self.engine.analyze(self.session)
         self.assertIn("suspect", report["states"].values())
         base = self.engine.repo.fingerprint("a.py")
-        (self.root / "a.py").chmod(0o755)
-        self.assertNotEqual(self.engine.repo.fingerprint("a.py"), base)
+        if os.name != "nt":
+            (self.root / "a.py").chmod(0o755)
+            self.assertNotEqual(self.engine.repo.fingerprint("a.py"), base)
+        else:
+            self.assertEqual(base["mode"], "100644")
 
     def test_policy_full_validation(self):
         path = self.root / ".verix.yml"
@@ -371,6 +372,25 @@ class EngineTests(unittest.TestCase):
         path.write_text("mode: advisory\nmode: blocking\n")
         with self.assertRaisesRegex(VerixError, "line 2"):
             policy.load(path)
+
+    def test_root_alias_is_accepted_but_nested_symlinks_are_not(self):
+        with tempfile.TemporaryDirectory() as directory:
+            alias = Path(directory) / "root-alias"
+            try:
+                alias.symlink_to(self.root, target_is_directory=True)
+                (self.root / "nested").symlink_to(self.root, target_is_directory=True)
+                (self.root / "link").symlink_to(self.root / "a.py")
+            except OSError as exc:
+                self.skipTest(f"Symlink creation unavailable: {exc}")
+            self.assertEqual(self.engine.repo.path(str(alias / "a.py")), "a.py")
+            for path in (alias / "link", alias / "nested" / "a.py", self.root / "link"):
+                with self.subTest(path=path), self.assertRaises(VerixError):
+                    self.engine.repo.path(str(path))
+
+    def test_tracked_file_mode_matches_git_on_every_platform(self):
+        self.assertEqual(
+            self.engine.repo.fingerprint("a.py"), self.engine.repo.fingerprint("a.py", "HEAD")
+        )
 
 
 if __name__ == "__main__":

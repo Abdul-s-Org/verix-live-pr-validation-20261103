@@ -77,6 +77,8 @@ class BenchmarkTests(unittest.TestCase):
             lambda cases: cases[0].update(files={"../outside": "bad"}),
             lambda cases: cases[0].update(files={".git/config": "bad"}),
             lambda cases: cases[0].update(files={"/absolute": "bad"}),
+            lambda cases: cases[0].update(files={"C:/outside": "bad"}),
+            lambda cases: cases[0].update(files={"folder\\outside": "bad"}),
             lambda cases: cases[0].update(files={"./alias": "bad"}),
             lambda cases: cases[0].update(changes={"loader.py": 42}),
             lambda cases: cases[0].update(changes={"loader.py": cases[0]["files"]["loader.py"]}),

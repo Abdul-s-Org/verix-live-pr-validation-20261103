@@ -17,7 +17,7 @@ def digest(content: bytes) -> str:
 class Repository:
     def __init__(self, path: str | Path):
         self.root = Path(path).resolve()
-        self.root = Path(self.git("rev-parse", "--show-toplevel").decode().strip())
+        self.root = Path(self.git("rev-parse", "--show-toplevel").decode().strip()).resolve()
 
     def git(self, *args: str) -> bytes:
         try:
@@ -36,18 +36,30 @@ class Repository:
 
     def path(self, value: str) -> str:
         path = Path(value)
+        if ".." in path.parts:
+            raise VerixError("Path must stay inside the repository")
         if path.is_absolute():
             try:
                 path = path.relative_to(self.root)
             except ValueError as exc:
-                raise VerixError("Path is outside the repository") from exc
+                # macOS exposes /var through /private/var; preserve paths below that alias.
+                for parent in reversed(path.parents):
+                    try:
+                        matches = parent.samefile(self.root)
+                    except OSError:
+                        matches = False
+                    if matches:
+                        path = path.relative_to(parent)
+                        break
+                else:
+                    raise VerixError("Path is outside the repository") from exc
         name = path.as_posix()
         if not name or name == "." or ".." in path.parts or ".git" in path.parts:
             raise VerixError("Path must name a file inside the repository")
         current = self.root
         for part in path.parts:
             current /= part
-            if current.is_symlink():
+            if current.is_symlink() or current.is_junction():
                 raise VerixError("Symlink evidence is not supported")
         return str(PurePosixPath(name))
 
@@ -75,9 +87,13 @@ class Repository:
             after = target.stat()
             if (before.st_mtime_ns, before.st_size) != (after.st_mtime_ns, after.st_size):
                 raise VerixError("File changed during capture; retry the read")
+            mode = "100755" if os.access(target, os.X_OK) else "100644"
+            if os.name == "nt":
+                entry = self.git("ls-files", "--stage", "-z", "--", path)
+                mode = entry.split(b" ", 1)[0].decode() if entry else "100644"
             return {
                 "sha256": digest(content),
-                "mode": "100755" if os.access(target, os.X_OK) else "100644",
+                "mode": mode,
             }
         except FileNotFoundError:
             return {"sha256": None, "mode": None}
