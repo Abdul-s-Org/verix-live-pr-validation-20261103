@@ -452,12 +452,71 @@ class EngineTests(unittest.TestCase):
                 self.engine.repo, "index_modes", wraps=self.engine.repo.index_modes
             ) as modes:
                 self.engine.analyze(self.session)
-                self.assertEqual(modes.call_count, 2)
+                self.assertEqual(modes.call_count, 1)
+            original = self.engine.repo.fingerprint
+
+            def mutate_index(*args, **kwargs):
+                self.git("update-index", "--chmod=+x", "a.py")
+                return original(*args, **kwargs)
+
+            with patch.object(self.engine.repo, "fingerprint", side_effect=mutate_index):
+                with self.assertRaisesRegex(VerixError, "index changed"):
+                    self.engine.analyze(self.session)
+
+    def test_index_rewrite_is_detected_even_when_bytes_are_restored(self):
+        from unittest.mock import patch
+
+        self.claim()
+        index = self.root / ".git" / "index"
+        original_bytes = index.read_bytes()
+        original_modes = self.engine.repo.index_modes
+
+        def transient_modes():
+            self.git("update-index", "--chmod=+x", "a.py")
+            result = original_modes()
+            index.write_bytes(original_bytes)
+            return result
+
+        with (
+            patch("verix.engine.service.WINDOWS", True),
+            patch.object(self.engine.repo, "index_modes", side_effect=transient_modes),
+        ):
+            with self.assertRaisesRegex(VerixError, "index changed"):
+                self.engine.analyze(self.session)
+        self.assertEqual(index.read_bytes(), original_bytes)
+
+    def test_custom_indexes_keep_full_mode_revalidation(self):
+        from unittest.mock import patch
+
+        self.claim()
+        with patch.dict(os.environ, {"GIT_INDEX_FILE": "custom-index"}):
+            self.assertIsNone(self.engine.repo.index_snapshot())
+        with (
+            patch("verix.engine.service.WINDOWS", True),
+            patch.object(self.engine.repo, "index_snapshot", return_value=None),
+        ):
             before = self.engine.repo.index_modes()
             changed = {**before, "a.py": "100755"}
             with patch.object(self.engine.repo, "index_modes", side_effect=[before, changed]):
-                with self.assertRaisesRegex(VerixError, "index modes changed"):
+                with self.assertRaisesRegex(VerixError, "index changed"):
                     self.engine.analyze(self.session)
+
+    def test_linked_worktrees_keep_full_mode_revalidation(self):
+        with tempfile.TemporaryDirectory() as parent:
+            target = Path(parent) / "worktree"
+            self.git("worktree", "add", "--detach", str(target), "HEAD")
+            other = Engine(target)
+            try:
+                self.assertIsNone(other.repo.index_snapshot())
+                session = other.start("worktree-test")
+                other.observe(session, "a.py")
+                other.claim(session, "Contract", ["a.py"], [])
+                self.assertTrue(
+                    all(s == "valid" for s in other.analyze(session)["states"].values())
+                )
+            finally:
+                other.store.db.close()
+                self.git("worktree", "remove", "--force", str(target))
 
     def test_resuming_session_preserves_base_without_redundant_git_call(self):
         from unittest.mock import patch

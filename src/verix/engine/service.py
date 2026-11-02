@@ -120,6 +120,7 @@ class Engine:
         nodes = self.store.nodes(session)
         revision = self.repo.revision(head or "HEAD")
         states, reasons, fingerprints = {}, {}, {}
+        index_snapshot = self.repo.index_snapshot() if WINDOWS and not head else None
         index_modes = self.repo.index_modes() if WINDOWS and not head else None
 
         def visit(node, trail):
@@ -203,8 +204,14 @@ class Engine:
             visit(node, set())
         if revision != self.repo.revision(head or "HEAD"):
             raise VerixError("Revision changed during analysis; retry")
-        if index_modes is not None and index_modes != self.repo.index_modes():
-            raise VerixError("Git index modes changed during analysis; retry")
+        if index_modes is not None:
+            changed = (
+                index_snapshot != self.repo.index_snapshot()
+                if index_snapshot is not None
+                else index_modes != self.repo.index_modes()
+            )
+            if changed:
+                raise VerixError("Git index changed during analysis; retry")
         return {
             "schema_version": 1,
             "session": session,

@@ -4,6 +4,7 @@ import ast
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
+import stat
 import subprocess
 
 WINDOWS = os.name == "nt"
@@ -92,7 +93,12 @@ class Repository:
         current = self.root
         for part in path.parts:
             current /= part
-            if current.is_symlink() or current.is_junction():
+            try:
+                info = current.lstat()
+            except FileNotFoundError:
+                continue
+            # Windows directory junctions use the mount-point reparse tag.
+            if stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", 0) == 0xA0000003:
                 raise VerixError("Symlink evidence is not supported")
         return str(PurePosixPath(name))
 
@@ -120,21 +126,41 @@ class Repository:
         target = self.root / path
         try:
             before = target.stat()
-            if not target.is_file():
+            if not stat.S_ISREG(before.st_mode):
                 raise VerixError("Evidence must be a regular file")
             content = target.read_bytes()
             after = target.stat()
-            if (before.st_mtime_ns, before.st_size) != (after.st_mtime_ns, after.st_size):
+            if any(
+                getattr(before, key) != getattr(after, key)
+                for key in ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns", "st_mode")
+            ):
                 raise VerixError("File changed during capture; retry the read")
-            mode = "100755" if os.access(target, os.X_OK) else "100644"
             if index_modes is not None:
                 mode = index_modes.get(os.path.normcase(path), "100644")
             elif WINDOWS:
                 entry = self.git("ls-files", "--stage", "-z", "--", path)
                 mode = entry.split(b" ", 1)[0].decode() if entry else "100644"
+            else:
+                mode = "100755" if before.st_mode & stat.S_IXUSR else "100644"
             return fingerprint(content, mode, path, python_formatting)
         except FileNotFoundError:
             return {"sha256": None, "mode": None}
+
+    def index_snapshot(self) -> tuple | None:
+        # Linked worktrees and custom indexes retain the full Git-based recheck.
+        if not (self.root / ".git").is_dir() or "GIT_INDEX_FILE" in os.environ:
+            return None
+        try:
+            with (self.root / ".git" / "index").open("rb") as source:
+                before = os.fstat(source.fileno())
+                content = source.read()
+                after = os.fstat(source.fileno())
+            fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+            if any(getattr(before, key) != getattr(after, key) for key in fields):
+                raise VerixError("Git index changed while reading its snapshot; retry")
+            return digest(content), *(getattr(after, key) for key in fields)
+        except FileNotFoundError:
+            return None
 
     def index_modes(self) -> dict:
         modes = {}
