@@ -60,6 +60,8 @@ class Repository:
 
     def path(self, value: str) -> str:
         path = Path(value)
+        if path.anchor and not path.is_absolute():
+            raise VerixError("Drive-relative and root-relative paths are not supported")
         if ".." in path.parts:
             raise VerixError("Path must stay inside the repository")
         if path.is_absolute():
@@ -78,7 +80,12 @@ class Repository:
                 else:
                     raise VerixError("Path is outside the repository") from exc
         name = path.as_posix()
-        if not name or name == "." or ".." in path.parts or ".git" in path.parts:
+        if (
+            not name
+            or name == "."
+            or ".." in path.parts
+            or any(os.path.normcase(part) == ".git" for part in path.parts)
+        ):
             raise VerixError("Path must name a file inside the repository")
         current = self.root
         for part in path.parts:
