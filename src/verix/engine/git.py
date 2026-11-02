@@ -44,12 +44,26 @@ def fingerprint(content: bytes, mode: str, path: str, python_formatting: bool) -
 class Repository:
     def __init__(self, path: str | Path):
         self.root = Path(path).resolve()
-        self.root = Path(self.git("rev-parse", "--show-toplevel").decode().strip()).resolve()
+        self._startup_revision = None
+        try:
+            discovery = (
+                self.git("rev-parse", "--show-toplevel", "--verify", "HEAD^{commit}")
+                .decode()
+                .splitlines()
+            )
+        except VerixError:
+            discovery = []
+        if len(discovery) == 2:
+            root, self._startup_revision = discovery
+        else:
+            # Empty repositories and unusual path names retain ordinary Git discovery.
+            root = self.git("rev-parse", "--show-toplevel").decode().strip()
+        self.root = Path(root).resolve()
 
     def git(self, *args: str) -> bytes:
         try:
             return subprocess.run(
-                ["git", "-C", str(self.root), *args],
+                ["git", "--literal-pathspecs", "-C", str(self.root), *args],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 check=True,
@@ -169,9 +183,14 @@ class Repository:
         except FileNotFoundError:
             return None
 
-    def index_modes(self) -> dict:
+    def index_modes(self, paths: list[str] | None = None) -> dict:
+        if paths == []:
+            return {}
+        args = ["ls-files", "--stage", "-z"]
+        if paths is not None:
+            args.extend(["--", *paths])
         modes = {}
-        for entry in self.git("ls-files", "--stage", "-z").split(b"\0"):
+        for entry in self.git(*args).split(b"\0"):
             if not entry:
                 continue
             metadata, path = entry.split(b"\t", 1)

@@ -471,9 +471,9 @@ class EngineTests(unittest.TestCase):
         original_bytes = index.read_bytes()
         original_modes = self.engine.repo.index_modes
 
-        def transient_modes():
+        def transient_modes(*args, **kwargs):
             self.git("update-index", "--chmod=+x", "a.py")
-            result = original_modes()
+            result = original_modes(*args, **kwargs)
             index.write_bytes(original_bytes)
             return result
 
@@ -528,6 +528,70 @@ class EngineTests(unittest.TestCase):
         ):
             self.assertEqual(self.engine.start("test", self.session), self.session)
         self.assertEqual(self.engine.store.session(self.session)["base"], base)
+
+    def test_discovery_revision_is_rechecked_and_not_reused(self):
+        from unittest.mock import patch
+
+        self.claim()
+        with patch.object(
+            self.engine.repo, "revision", wraps=self.engine.repo.revision
+        ) as revision:
+            self.engine.analyze(self.session)
+            self.assertEqual(revision.call_count, 1)
+        with patch.object(
+            self.engine.repo, "revision", wraps=self.engine.repo.revision
+        ) as revision:
+            self.engine.analyze(self.session)
+            self.assertEqual(revision.call_count, 2)
+
+    def test_old_discovery_revision_refreshes_without_stale_results(self):
+        self.claim()
+        self.git("commit", "--allow-empty", "-qm", "head moved before analysis")
+        current = self.engine.repo.revision()
+        result = self.engine.analyze(self.session)
+        self.assertEqual(result["revision"], current)
+        self.assertTrue(all(state == "valid" for state in result["states"].values()))
+
+    def test_continuing_head_races_are_rejected_after_discovery_refresh(self):
+        from unittest.mock import patch
+
+        self.claim()
+        original = self.engine.repo.fingerprint
+        calls = []
+
+        def move_head(*args, **kwargs):
+            result = original(*args, **kwargs)
+            calls.append(True)
+            self.git("commit", "--allow-empty", "-qm", f"concurrent change {len(calls)}")
+            return result
+
+        with patch.object(self.engine.repo, "fingerprint", side_effect=move_head):
+            with self.assertRaisesRegex(VerixError, "Revision changed"):
+                self.engine.analyze(self.session)
+        self.assertEqual(len(calls), 2)
+
+    def test_literal_observed_paths_filter_index_without_pattern_expansion(self):
+        name, decoy = "source[1].py", "source1.py"
+        self.write(name, "LITERAL = 1\n")
+        self.write(decoy, "DECOY = 2\n")
+        self.engine.repo.git("add", "--", name, decoy)
+        self.git("commit", "-qm", "literal filenames")
+        modes = self.engine.repo.index_modes([name])
+        self.assertEqual(modes, {os.path.normcase(name): "100644"})
+        self.assertEqual(self.engine.repo.index_modes([]), {})
+        self.assertEqual(
+            self.engine.repo.fingerprint(name), self.engine.repo.fingerprint(name, "HEAD")
+        )
+
+    def test_repository_discovery_allows_initialization_before_first_commit(self):
+        from verix.engine.git import Repository
+
+        with tempfile.TemporaryDirectory() as directory:
+            subprocess.run(["git", "init", "-q", directory], check=True, capture_output=True)
+            repo = Repository(directory)
+            self.assertEqual(repo.root, Path(directory).resolve())
+            with self.assertRaises(VerixError):
+                repo.revision()
 
 
 if __name__ == "__main__":

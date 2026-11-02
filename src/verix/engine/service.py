@@ -118,10 +118,15 @@ class Engine:
 
     def analyze(self, session: str, head: str | None = None) -> dict:
         nodes = self.store.nodes(session)
-        revision = self.repo.revision(head or "HEAD")
+        startup_revision = self.repo._startup_revision if head is None else None
+        self.repo._startup_revision = None
+        revision = startup_revision or self.repo.revision(head or "HEAD")
         states, reasons, fingerprints = {}, {}, {}
+        observed_paths = sorted(
+            {node["path"] for node in nodes.values() if node["kind"] == "observation"}
+        )
         index_snapshot = self.repo.index_snapshot() if WINDOWS and not head else None
-        index_modes = self.repo.index_modes() if WINDOWS and not head else None
+        index_modes = self.repo.index_modes(observed_paths) if WINDOWS and not head else None
 
         def visit(node, trail):
             if node in states:
@@ -203,12 +208,14 @@ class Engine:
         for node in nodes:
             visit(node, set())
         if revision != self.repo.revision(head or "HEAD"):
+            if startup_revision is not None:
+                return self.analyze(session, head)
             raise VerixError("Revision changed during analysis; retry")
         if index_modes is not None:
             changed = (
                 index_snapshot != self.repo.index_snapshot()
                 if index_snapshot is not None
-                else index_modes != self.repo.index_modes()
+                else index_modes != self.repo.index_modes(observed_paths)
             )
             if changed:
                 raise VerixError("Git index changed during analysis; retry")
