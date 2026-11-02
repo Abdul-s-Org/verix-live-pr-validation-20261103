@@ -35,7 +35,15 @@ class Engine:
             )
         return session
 
-    def observe(self, session: str, path: str, complete: bool = True) -> str:
+    def observe(
+        self,
+        session: str,
+        path: str,
+        complete: bool = True,
+        *,
+        expected=None,
+        expected_revision=None,
+    ) -> str:
         path = self.repo.path(path)
         if policy.excluded(self.policy, path):
             raise VerixError("Evidence path excluded by policy")
@@ -43,8 +51,10 @@ class Engine:
         fingerprint = self.fingerprint(path)
         if fingerprint["sha256"] is None:
             raise VerixError("Cannot capture missing file")
-        if base != self.repo.revision():
+        if base != self.repo.revision() or (expected_revision and expected_revision != base):
             raise VerixError("Revision changed during capture; retry")
+        if expected is not None and not equivalent(fingerprint, expected):
+            raise VerixError("Read evidence changed before capture; retry")
         node = identifier()
         with self.store.transaction():
             self.store.add(
@@ -179,6 +189,10 @@ class Engine:
             states[node] = state
             return state
 
+        # Verification snapshots bind all observations, including unrelated ones.
+        for node, value in nodes.items():
+            if value["kind"] == "observation":
+                visit(node, set())
         for node in nodes:
             visit(node, set())
         if revision != self.repo.revision(head or "HEAD"):

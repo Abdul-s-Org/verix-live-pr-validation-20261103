@@ -25,7 +25,7 @@ PRAGMA user_version=1;
 class Store:
     def __init__(self, root: Path):
         folder = root / ".verix"
-        if folder.is_symlink():
+        if folder.is_symlink() or folder.is_junction():
             raise VerixError("Runtime directory cannot be a symlink")
         folder.mkdir(mode=0o700, exist_ok=True)
         target = folder / "state.sqlite3"

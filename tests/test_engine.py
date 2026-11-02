@@ -429,6 +429,19 @@ class EngineTests(unittest.TestCase):
         self.engine.policy["mode"] = "blocking"
         self.assertEqual(self.engine.analyze(self.session)["states"][claim], "suspect")
 
+    def test_verification_with_unrelated_observations_is_order_independent(self):
+        claim = self.claim()
+        self.claim("b.py")
+        self.write("a.py", "VALUE = 2\n")
+        self.engine.verify(self.session, claim, reaffirm=True)
+        # Force claims before observations to expose ordering-dependent replay failures.
+        nodes = self.engine.store.nodes(self.session)
+        ordered = dict(sorted(nodes.items(), key=lambda item: item[1]["kind"] == "observation"))
+        from unittest.mock import patch
+
+        with patch.object(self.engine.store, "nodes", return_value=ordered):
+            self.assertEqual(self.engine.analyze(self.session)["states"][claim], "valid")
+
 
 if __name__ == "__main__":
     unittest.main()

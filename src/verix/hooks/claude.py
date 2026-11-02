@@ -1,21 +1,25 @@
 """Conservative Claude Code adapter: exact full-file reads only become complete evidence."""
 
 import json
+from pathlib import Path
 import shlex
 import sys
+import tempfile
 
 from verix.engine.git import VerixError, digest
 
 
 def install(root):
     directory = root / ".claude"
-    if directory.is_symlink():
+    if directory.is_symlink() or directory.is_junction():
         raise VerixError("Claude configuration directory cannot be a symlink")
     directory.mkdir(exist_ok=True)
     target = directory / "settings.local.json"
     if target.is_symlink():
         raise VerixError("Claude settings cannot be a symlink")
     data = json.loads(target.read_text()) if target.exists() else {}
+    if not isinstance(data, dict) or not isinstance(data.get("hooks", {}), dict):
+        raise VerixError("Claude settings and hooks must be JSON objects")
     hooks = data.setdefault("hooks", {})
     command = f"{shlex.quote(sys.executable)} -m verix hook"
     for event, matcher in (
@@ -29,13 +33,17 @@ def install(root):
         if matcher:
             entry["matcher"] = matcher
         entries = hooks.setdefault(event, [])
+        if not isinstance(entries, list):
+            raise VerixError(f"Claude {event} hooks must be a list")
         if entry not in entries:
             entries.append(entry)
-    temporary = target.with_suffix(".tmp")
-    if temporary.is_symlink():
-        raise VerixError("Unsafe temporary settings path")
-    temporary.write_text(json.dumps(data, indent=2) + "\n")
-    temporary.replace(target)
+    with tempfile.NamedTemporaryFile(dir=directory, suffix=".json", delete=False) as output:
+        temporary = Path(output.name)
+    try:
+        temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(target)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def handle(engine, payload: dict) -> dict:
@@ -93,7 +101,15 @@ def _handle(engine, payload: dict) -> dict:
             and before["revision"] == engine.repo.revision()
             and digest(content.encode()) == current["sha256"]
         )
-        result = {"observation": engine.observe(session, path, complete=complete)}
+        result = {
+            "observation": engine.observe(
+                session,
+                path,
+                complete=complete,
+                expected=current,
+                expected_revision=before["revision"] if complete else None,
+            )
+        }
     elif event == "PreToolUse" and tool in ("Edit", "Write"):
         result = engine.check(session, path, tool.lower())
         action_id = engine.claim(
