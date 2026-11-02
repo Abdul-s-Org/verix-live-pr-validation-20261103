@@ -1,212 +1,1739 @@
 [
   {
-    "id": "rename-01",
+    "id": "rename-loader",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "loader.py": "def load_user(id):\n    return id\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "loader.py": "def fetch_user(id):\n    return id\n"
+    },
+    "reads": [
+      "loader.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "load_user is exported",
+        "evidence": [
+          "loader.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "rename-02",
+    "id": "remove-refresh",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "auth.py": "def refresh_token(token):\n    return token\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "auth.py": "# Refresh endpoint removed\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "refresh_token is available",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "rename-03",
+    "id": "move-parser-module",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "parser.py": "def parse(text):\n    return text.split()\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "parser.py": null,
+      "syntax/parser.py": "def parse(text):\n    return text.split()\n"
+    },
+    "reads": [
+      "parser.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The parser module is importable",
+        "evidence": [
+          "parser.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "rename-04",
+    "id": "rename-config-class",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "config.py": "class Settings:\n    debug = False\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "config.py": "class AppConfig:\n    debug = False\n"
+    },
+    "reads": [
+      "config.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Settings is the configuration class",
+        "evidence": [
+          "config.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "rename-05",
+    "id": "remove-result-field",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "result.py": "class Result:\n    status = 200\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "result.py": "class Result:\n    code = 200\n"
+    },
+    "reads": [
+      "result.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Result exposes a status field",
+        "evidence": [
+          "result.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "rename-06",
+    "id": "rename-keyword-argument",
     "family": "rename",
-    "before": "def load(): pass\n",
-    "after": "",
-    "affected": true
+    "files": {
+      "client.py": "def connect(timeout=30):\n    return timeout\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "client.py": "def connect(timeout_seconds=30):\n    return timeout_seconds\n"
+    },
+    "reads": [
+      "client.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "connect accepts timeout as a keyword",
+        "evidence": [
+          "client.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-01",
+    "id": "auth-jwt-to-sessions",
     "family": "behavior",
-    "before": "AUTH = \"jwt\"\n",
-    "after": "AUTH = \"session\"\n",
-    "affected": true
+    "files": {
+      "auth.py": "def authenticate(request):\n    return request.headers[\"Authorization\"]\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "auth.py": "def authenticate(request):\n    return request.cookies[\"session\"]\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses the Authorization header",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-02",
+    "id": "retry-disabled",
     "family": "behavior",
-    "before": "RETRIES = 3\n",
-    "after": "RETRIES = 0\n",
-    "affected": true
+    "files": {
+      "retry.py": "MAX_ATTEMPTS = 3\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "retry.py": "MAX_ATTEMPTS = 1\n"
+    },
+    "reads": [
+      "retry.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Transient errors receive two retries",
+        "evidence": [
+          "retry.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-03",
+    "id": "cache-expiry-shortened",
     "family": "behavior",
-    "before": "CACHE = True\n",
-    "after": "CACHE = False\n",
-    "affected": true
+    "files": {
+      "cache.py": "TTL_SECONDS = 3600\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "cache.py": "TTL_SECONDS = 5\n"
+    },
+    "reads": [
+      "cache.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Cached results live for an hour",
+        "evidence": [
+          "cache.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-04",
+    "id": "sort-order-reversed",
     "family": "behavior",
-    "before": "ORDER = \"asc\"\n",
-    "after": "ORDER = \"desc\"\n",
-    "affected": true
+    "files": {
+      "feed.py": "def feed(items):\n    return sorted(items)\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "feed.py": "def feed(items):\n    return sorted(items, reverse=True)\n"
+    },
+    "reads": [
+      "feed.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The feed is in ascending order",
+        "evidence": [
+          "feed.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-05",
+    "id": "billing-rounding-changed",
     "family": "behavior",
-    "before": "TIMEOUT = 30\n",
-    "after": "TIMEOUT = 1\n",
-    "affected": true
+    "files": {
+      "billing.py": "from decimal import ROUND_DOWN\nROUNDING = ROUND_DOWN\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "billing.py": "from decimal import ROUND_HALF_UP\nROUNDING = ROUND_HALF_UP\n"
+    },
+    "reads": [
+      "billing.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Amounts round down",
+        "evidence": [
+          "billing.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "behavior-06",
+    "id": "validation-now-strict",
     "family": "behavior",
-    "before": "STRICT = False\n",
-    "after": "STRICT = True\n",
-    "affected": true
+    "files": {
+      "validation.py": "def accept(value):\n    return bool(value)\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "validation.py": "def accept(value):\n    return isinstance(value, str) and bool(value)\n"
+    },
+    "reads": [
+      "validation.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Truthy numeric inputs are accepted",
+        "evidence": [
+          "validation.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "config-01",
+    "id": "database-column-renamed",
     "family": "config",
-    "before": "COLUMN = \"name\"\n",
-    "after": "COLUMN = \"full_name\"\n",
-    "affected": true
+    "files": {
+      "schema.sql": "CREATE TABLE users (name TEXT);\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "schema.sql": "CREATE TABLE users (full_name TEXT);\n"
+    },
+    "reads": [
+      "schema.sql",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "users has a name column",
+        "evidence": [
+          "schema.sql"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "config-02",
+    "id": "environment-variable-renamed",
     "family": "config",
-    "before": "PORT = 80\n",
-    "after": "PORT = 443\n",
-    "affected": true
+    "files": {
+      "settings.py": "import os\nTOKEN = os.environ[\"API_KEY\"]\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "settings.py": "import os\nTOKEN = os.environ[\"SERVICE_TOKEN\"]\n"
+    },
+    "reads": [
+      "settings.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The service reads API_KEY",
+        "evidence": [
+          "settings.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "config-03",
+    "id": "service-port-moved",
     "family": "config",
-    "before": "REGION = \"us\"\n",
-    "after": "REGION = \"eu\"\n",
-    "affected": true
+    "files": {
+      "service.json": "{\"port\": 8080}\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "service.json": "{\"port\": 8443}\n"
+    },
+    "reads": [
+      "service.json",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The service listens on port 8080",
+        "evidence": [
+          "service.json"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "config-04",
+    "id": "foreign-key-added",
     "family": "config",
-    "before": "ENV = \"KEY\"\n",
-    "after": "ENV = \"TOKEN\"\n",
-    "affected": true
+    "files": {
+      "schema.sql": "CREATE TABLE orders (user_id INTEGER);\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "schema.sql": "CREATE TABLE orders (user_id INTEGER REFERENCES users(id));\n"
+    },
+    "reads": [
+      "schema.sql",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Orders can reference absent users",
+        "evidence": [
+          "schema.sql"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "config-05",
+    "id": "feature-default-flipped",
     "family": "config",
-    "before": "TABLE = \"users\"\n",
-    "after": "TABLE = \"accounts\"\n",
-    "affected": true
+    "files": {
+      "flags.json": "{\"async_jobs\": false}\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "flags.json": "{\"async_jobs\": true}\n"
+    },
+    "reads": [
+      "flags.json",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Jobs run synchronously by default",
+        "evidence": [
+          "flags.json"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "dependency-01",
+    "id": "dependency-major-bump",
     "family": "dependency",
-    "before": "API = \"v1\"\n",
-    "after": "API = \"v2\"\n",
-    "affected": true
+    "files": {
+      "requirements.txt": "httpx==0.27.0\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "requirements.txt": "httpx==0.28.0\n"
+    },
+    "reads": [
+      "requirements.txt",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The pinned HTTP client is version 0.27.0",
+        "evidence": [
+          "requirements.txt"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "dependency-02",
+    "id": "dependency-extra-removed",
     "family": "dependency",
-    "before": "RETURN = \"list\"\n",
-    "after": "RETURN = \"iterator\"\n",
-    "affected": true
+    "files": {
+      "pyproject.toml": "[project]\ndependencies = [\"httpx[http2]==0.28.0\"]\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "pyproject.toml": "[project]\ndependencies = [\"httpx==0.28.0\"]\n"
+    },
+    "reads": [
+      "pyproject.toml",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The HTTP2 extra is installed",
+        "evidence": [
+          "pyproject.toml"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "dependency-03",
+    "id": "dependency-api-moved",
     "family": "dependency",
-    "before": "SYNC = True\n",
-    "after": "SYNC = False\n",
-    "affected": true
+    "files": {
+      "vendor/client.py": "def request(url):\n    return url\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "vendor/client.py": "class Client:\n    def request(self, url):\n        return url\n"
+    },
+    "reads": [
+      "vendor/client.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The library exports a module-level request function",
+        "evidence": [
+          "vendor/client.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "dependency-04",
+    "id": "dependency-return-type-changed",
     "family": "dependency",
-    "before": "PARAM = \"name\"\n",
-    "after": "PARAM = \"id\"\n",
-    "affected": true
+    "files": {
+      "vendor/query.py": "def query():\n    return [1, 2]\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "vendor/query.py": "def query():\n    yield 1\n    yield 2\n"
+    },
+    "reads": [
+      "vendor/query.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "query returns an indexable list",
+        "evidence": [
+          "vendor/query.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "irrelevant-01",
+    "id": "docs-only-change",
     "family": "irrelevant",
-    "before": "VALUE = 1\n",
-    "after": "Note 0\n",
-    "affected": false
+    "files": {
+      "auth.py": "AUTH = \"jwt\"\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "README.md": "# Usage\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses JWT",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "irrelevant-02",
+    "id": "unrelated-static-asset",
     "family": "irrelevant",
-    "before": "VALUE = 1\n",
-    "after": "Note 1\n",
-    "affected": false
+    "files": {
+      "auth.py": "AUTH = \"jwt\"\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "assets/logo.svg": "<svg/>\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses JWT",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "irrelevant-03",
+    "id": "unrelated-test-added",
     "family": "irrelevant",
-    "before": "VALUE = 1\n",
-    "after": "Note 2\n",
-    "affected": false
+    "files": {
+      "auth.py": "AUTH = \"jwt\"\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "tests/test_health.py": "def test_health():\n    assert True\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses JWT",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "irrelevant-04",
+    "id": "unrelated-module-added",
     "family": "irrelevant",
-    "before": "VALUE = 1\n",
-    "after": "Note 3\n",
-    "affected": false
+    "files": {
+      "auth.py": "AUTH = \"jwt\"\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "reports.py": "def report():\n    return []\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses JWT",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "irrelevant-05",
+    "id": "unrelated-config-change",
     "family": "irrelevant",
-    "before": "VALUE = 1\n",
-    "after": "Note 4\n",
-    "affected": false
+    "files": {
+      "auth.py": "AUTH = \"jwt\"\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "editor.json": "{\"tabSize\": 4}\n"
+    },
+    "reads": [
+      "auth.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Authentication uses JWT",
+        "evidence": [
+          "auth.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "formatting-01",
+    "id": "whitespace-only-change",
     "family": "formatting",
-    "before": "VALUE=1\n",
-    "after": "VALUE = 1\n",
-    "affected": false
+    "files": {
+      "limits.py": "LIMIT=10\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "limits.py": "LIMIT = 10\n"
+    },
+    "reads": [
+      "limits.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The request limit is 10",
+        "evidence": [
+          "limits.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "formatting-02",
+    "id": "comment-only-change",
     "family": "formatting",
-    "before": "VALUE = 1\n",
-    "after": "# comment\nVALUE = 1\n",
-    "affected": false
+    "files": {
+      "limits.py": "LIMIT = 10\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "limits.py": "# Maximum requests\nLIMIT = 10\n"
+    },
+    "reads": [
+      "limits.py",
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "The request limit is 10",
+        "evidence": [
+          "limits.py"
+        ],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": true
+    }
   },
   {
-    "id": "hidden-01",
+    "id": "unobserved-runtime-config",
     "family": "hidden",
-    "before": "CONFIG = \"a\"\n",
-    "after": "CONFIG = \"b\"\n",
-    "affected": true
+    "files": {
+      "runtime.json": "{\"auth\": \"jwt\"}\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "runtime.json": "{\"auth\": \"session\"}\n"
+    },
+    "reads": [
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "Runtime authentication is JWT",
+        "evidence": [],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   },
   {
-    "id": "hidden-02",
+    "id": "unobserved-schema-change",
     "family": "hidden",
-    "before": "CONFIG = \"a\"\n",
-    "after": "CONFIG = \"b\"\n",
-    "affected": true
+    "files": {
+      "schema.sql": "CREATE TABLE users (id INTEGER, email TEXT);\n",
+      "health.py": "def healthy():\n    return True\n"
+    },
+    "changes": {
+      "schema.sql": "CREATE TABLE users (id INTEGER);\n"
+    },
+    "reads": [
+      "health.py"
+    ],
+    "claims": [
+      {
+        "id": "contract",
+        "text": "User records contain email",
+        "evidence": [],
+        "parents": []
+      },
+      {
+        "id": "plan",
+        "text": "The planned integration relies on the contract",
+        "evidence": [],
+        "parents": [
+          "contract"
+        ]
+      },
+      {
+        "id": "edit",
+        "text": "The proposed edit follows the integration plan",
+        "evidence": [],
+        "parents": [
+          "plan"
+        ]
+      },
+      {
+        "id": "unrelated",
+        "text": "The health probe returns True",
+        "evidence": [
+          "health.py"
+        ],
+        "parents": []
+      }
+    ],
+    "expected_affected": [
+      "contract",
+      "plan",
+      "edit"
+    ],
+    "action": {
+      "path": "app/integration.py",
+      "risk": "high",
+      "valid": false
+    }
   }
 ]

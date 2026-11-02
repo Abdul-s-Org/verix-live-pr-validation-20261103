@@ -6,7 +6,11 @@ Local sessions and exact file fingerprints; SQLite schema versioning and transac
 
 ## Evidence gathered locally
 
-All 29 tests pass on Python 3.14, including Hypothesis property tests. `python -m pytest --cov=verix.engine --cov-report=term-missing --cov-fail-under=80` reports 96.11% engine statement coverage. Ruff lint and formatting checks pass. Tests cover temporary repositories, propagation, invalid receipts, policy errors, rollback, revision changes, and simulated hooks. The built wheel's installed CLI can execute the fixture benchmark. Python 3.12 and macOS remain CI validation targets.
+The previous implementation passed 29 tests on Python 3.14, including Hypothesis property tests. The benchmark milestone adds six tests covering the complete suite, independent baseline calculation, metrics, reproducibility, and invalid fixtures. `python -m pytest --cov=verix.engine --cov-report=term-missing --cov-fail-under=80` reports 96.11% engine statement coverage. Ruff lint and formatting checks pass. Tests cover temporary repositories, propagation, invalid receipts, policy errors, rollback, revision changes, and simulated hooks. The built wheel's installed CLI can execute the fixture benchmark. The earlier Linux/Python 3.12 CI job passed; its macOS job remains queued. CI now also runs the benchmark from the installed wheel and uploads per-platform results.
+
+## Benchmark milestone
+
+Replaced the repeated two-claim examples with 30 distinct multi-file fixtures, three-level dependency chains, and unrelated controls. Inputs are validated before fixture creation; labels remain separate from engine results. Hash-baseline results are calculated directly from fingerprints, and raw per-case decisions/commit IDs are emitted. Blocking-mode scoring exposes two false blocks among seven valid actions, so the false-block release gate currently fails. Independent label review and real-agent trials are still required before this milestone's acceptance gate can close.
 
 ## Release blockers
 

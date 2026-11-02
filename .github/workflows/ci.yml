@@ -22,3 +22,8 @@ jobs:
           python -m venv /tmp/verix-wheel-test
           /tmp/verix-wheel-test/bin/pip install dist/*.whl
           /tmp/verix-wheel-test/bin/verix --help
+          /tmp/verix-wheel-test/bin/verix bench run > "$RUNNER_TEMP/verix-benchmark.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-${{ matrix.os }}
+          path: ${{ runner.temp }}/verix-benchmark.json
