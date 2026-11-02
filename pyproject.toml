@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verix"
+version = "0.1.0"
+description = "A local-first stale-assumption guard for coding agents"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "hypothesis>=6"]
+
+[project.scripts]
+verix = "verix.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
