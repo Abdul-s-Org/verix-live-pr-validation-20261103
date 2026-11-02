@@ -49,7 +49,11 @@ class Repository:
     def git(self, *args: str) -> bytes:
         try:
             return subprocess.run(
-                ["git", "-C", str(self.root), *args], capture_output=True, check=True, timeout=10
+                ["git", "-C", str(self.root), *args],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                check=True,
+                timeout=10,
             ).stdout
         except (OSError, subprocess.SubprocessError) as exc:
             raise VerixError(
