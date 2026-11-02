@@ -489,8 +489,9 @@ class EngineTests(unittest.TestCase):
         from unittest.mock import patch
 
         self.claim()
-        with patch.dict(os.environ, {"GIT_INDEX_FILE": "custom-index"}):
-            self.assertIsNone(self.engine.repo.index_snapshot())
+        for key in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
+            with self.subTest(key=key), patch.dict(os.environ, {key: "custom-location"}):
+                self.assertIsNone(self.engine.repo.index_snapshot())
         with (
             patch("verix.engine.service.WINDOWS", True),
             patch.object(self.engine.repo, "index_snapshot", return_value=None),

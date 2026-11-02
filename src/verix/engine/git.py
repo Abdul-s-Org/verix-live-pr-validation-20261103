@@ -148,7 +148,10 @@ class Repository:
 
     def index_snapshot(self) -> tuple | None:
         # Linked worktrees and custom indexes retain the full Git-based recheck.
-        if not (self.root / ".git").is_dir() or "GIT_INDEX_FILE" in os.environ:
+        if not (self.root / ".git").is_dir() or any(
+            key in os.environ
+            for key in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")
+        ):
             return None
         try:
             with (self.root / ".git" / "index").open("rb") as source:

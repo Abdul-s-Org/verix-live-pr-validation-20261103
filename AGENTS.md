@@ -1,30 +1,32 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+## Project Structure
 
-This repository currently contains planning documents, not an application. `docs/verix_prob.pdf` describes the problem and validation strategy; `docs/verix_prd.pdf` contains the product requirements and proposed build plan. Read both before proposing implementation changes, and keep new documentation in `docs/` with descriptive, lowercase filenames.
+Verix is a Python CLI for detecting stale coding-agent evidence. `src/verix/engine/` owns Git access, fingerprints, SQLite, evidence propagation, and policy. `src/verix/hooks/` contains the Claude Code adapter. CLI commands, receipts, and the benchmark live in `src/verix/`; packaged scenarios are in `scenarios.json`.
 
-The PRD proposes a local-first Python engine and CLI, with deterministic rules deciding outcomes and an LLM restricted to extraction and explanation. Treat the proposed stack and targets as plans to validate, not as existing functionality. Preserve the distinction between verified evidence, inference, and hypotheses when updating product documentation.
+Use `tests/` for unit, integration, property, race, and workflow tests. `scripts/` contains installation/performance checks; `.github/workflows/` runs Linux, macOS, and Windows CI. Keep operational documentation and JSON schemas in `docs/`. Product PDFs describe intent; `docs/release-status.md` distinguishes implementation from accepted release evidence.
 
-## Build, Test, and Development Commands
+## Development and Checks
 
-No build system, dependency manifest, or application commands are present yet. To inspect the current documents locally, use:
+Use Python 3.12+, Git, and Node.js for workflow JavaScript tests. Install with `python -m pip install -e '.[dev]'` inside a virtual environment.
 
 ```sh
-pdftotext -layout docs/verix_prd.pdf - | less
-pdftotext -layout docs/verix_prob.pdf - | less
+ruff check .
+ruff format --check .
+python -m pytest --cov=verix.engine --cov-report=term-missing --cov-fail-under=80
+python -m build
 ```
 
-When adding runnable code, document its setup, development, build, and test commands alongside the implementation. Avoid introducing hosted services as a prerequisite for local development without an explicit product decision.
+For packaging or performance changes, also run `python scripts/smoke_install.py` with one wheel in `dist/`, and `python scripts/check_performance.py`. Inspect hosted checks and artifacts across all three operating systems.
 
-## Coding Style & Naming Conventions
+## Implementation Rules
 
-No code formatter, linter, or language-specific conventions are configured. Follow the conventions of any existing module you extend; introduce formatting and linting configuration with the first implementation rather than assuming a style. Name files and tests for the behavior they contain, and keep changes focused on the stated requirements.
+Choose the smallest complete change. Inspect every caller before fixing shared behavior; reuse existing helpers and avoid unnecessary dependencies or abstractions. Use four-space indentation, `snake_case`, `PascalCase` classes, and Ruff's 100-column configuration.
 
-## Testing Guidelines
+Add meaningful regression tests named `test_*.py`. Use temporary repositories and synthetic inputs. Preserve validation, error handling, deterministic verdicts, revision/content/policy binding, and audit replay. Never trade those guarantees for latency. Contract changes must update schemas, validation, callers, tests, and docs together.
 
-There is no test framework or coverage requirement yet. New behavior should include automated tests, particularly for deterministic decisions and stale-assumption scenarios. The PRD calls for a benchmark before the local engine; document how to run it and report results once it exists. Do not present the PRD's recall or false-block targets as measured results.
+## Commits and Release Discipline
 
-## Commit & Pull Request Guidelines
+Use scoped imperative subjects such as `fix: reject stale evidence`. After authorized implementation, run relevant checks, commit focused changes, and push to the requested branch. Respect branch protection and never force-push shared history.
 
-No Git history is available here to establish a commit convention. Use concise, imperative commit subjects that describe the change. Pull requests should explain the problem and solution, link relevant issues or requirements, and list checks performed; include screenshots when a change affects a user interface.
+Keep runtime databases, local settings, secrets, private source, and customer data out of commits. Benchmark labels remain drafts until independently reviewed. Report measured latency and failures honestly; passing automated tests does not close real-agent, live-integration, or customer-validation gates. Paid agent trials and release publishing require subsequent explicit authorization.

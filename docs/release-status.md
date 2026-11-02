@@ -20,9 +20,11 @@ Version remains `0.1.0` while release acceptance is open. This is a working deve
 
 The path-fix CI run passed all Linux, macOS, and Windows jobs: [run 41518933457](https://github.com/abdulwasea89/Verix/actions/runs/41518933457). Each job includes tests, coverage, lint/format, package building, and installed-wheel benchmark execution. Follow-up commits add further hook, PR, and performance checks; inspect their own runs before relying on them.
 
-The local suite has 57 tests plus parameterized subtests. Engine statement coverage was 94.93% on Python 3.14, exceeding the 80% threshold. Workflow JavaScript tests execute under Node.js with mocked GitHub APIs; they do not post comments. The CI matrix supplies Node.js.
+The local suite has 60 tests plus parameterized subtests. Engine statement coverage is 94.47% on Python 3.14, exceeding the 80% threshold. Workflow JavaScript tests execute under Node.js with mocked GitHub APIs; they do not post comments. The CI matrix supplies Node.js.
 
-A local 20-sample simulated hook check on a 5,000-file repository measured approximately 148 ms median and 197 ms p95. These are fixture/hardware measurements, not actual Claude Code transport latency. CI uploads its own per-platform measurements alongside installed-wheel benchmark results. Latency-target misses are reported, not silently relabeled as passes. The first Windows artifact measured a 672 ms median; the follow-up batches index-mode reads, rechecks the snapshot for races, and avoids redundant Git calls when resuming a session. Inspect the follow-up run for its measured result.
+The latency optimization passed all three hosted platforms in [run 41524531590](https://github.com/abdulwasea89/Verix/actions/runs/41524531590). Windows measured a 297 ms median and 313 ms p95 across the same 20 samples on a 5,000-file fixture, meeting the proposed 300 ms / 1 s targets on that runner. The earlier measurements were 672 ms and then 391 ms median. The final optimization removes redundant filesystem calls and guards the batched index modes with content and file-identity snapshots. Tests reject concurrent index rewrites even when original bytes are restored; linked worktrees and custom Git layouts retain full Git-based checks.
+
+These measurements cover simulated hook command processes, not actual Claude Code transport. They are hardware/runner dependent, not a service-level guarantee. CI uploads each platform's own measurements and explicitly reports target misses. Follow-up commits must be evaluated against their own results.
 
 ## Benchmark limits
 
