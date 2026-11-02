@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import time
 
-from verix.engine.git import VerixError
+from verix.engine.git import VerixError, equivalent
 from verix.engine.policy import evaluate
 from verix.engine.service import Engine
 
@@ -136,7 +136,7 @@ def load(path: Path) -> list[dict]:
         raise VerixError(f"Cannot read benchmark scenarios: {exc}") from exc
 
 
-def _run_case(case):
+def _run_case(case, ignore_python_formatting=False):
     start = time.monotonic()
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -185,11 +185,14 @@ def _run_case(case):
         git("commit", "-qm", "fixture before")
         engine = Engine(root)
         try:
+            engine.policy["ignore_python_formatting"] = ignore_python_formatting
             session = engine.start("benchmark")
             recorded = {}
             for path in case["reads"]:
                 engine.observe(session, path)
-                recorded[path] = engine.repo.fingerprint(path)
+                recorded[path] = engine.repo.fingerprint(
+                    path, python_formatting=ignore_python_formatting
+                )
             claims = {}
             for claim in case["claims"]:
                 claims[claim["id"]] = engine.claim(
@@ -204,7 +207,11 @@ def _run_case(case):
             changed_reads = {
                 path
                 for path, original in recorded.items()
-                if engine.repo.fingerprint(path) != original
+                if not equivalent(
+                    original,
+                    engine.repo.fingerprint(path, python_formatting=ignore_python_formatting),
+                    ignore_python_formatting,
+                )
             }
             baseline = {
                 claim["id"]
@@ -285,11 +292,12 @@ def summarize(results):
     return totals
 
 
-def run(scenarios: Path | None = None) -> dict:
+def run(scenarios: Path | None = None, ignore_python_formatting: bool = False) -> dict:
     cases = load(scenarios or Path(__file__).parent / "scenarios.json")
-    results = [_run_case(case) for case in cases]
+    results = [_run_case(case, ignore_python_formatting) for case in cases]
     return {
         "schema_version": 2,
+        "ignore_python_formatting": ignore_python_formatting,
         "label_status": "draft; independent review required",
         "conditions": summarize(results),
         "scenarios": results,

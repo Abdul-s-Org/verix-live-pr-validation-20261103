@@ -1,5 +1,6 @@
 """Git access and content fingerprints without shell interpretation."""
 
+import ast
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
@@ -12,6 +13,29 @@ class VerixError(Exception):
 
 def digest(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
+
+
+def equivalent(left: dict, right: dict, ignore_python_formatting: bool = False) -> bool:
+    if left.get("mode") != right.get("mode"):
+        return False
+    if left.get("sha256") == right.get("sha256"):
+        return True
+    return bool(
+        ignore_python_formatting
+        and left.get("python_ast_sha256")
+        and left.get("python_ast_sha256") == right.get("python_ast_sha256")
+    )
+
+
+def fingerprint(content: bytes, mode: str, path: str, python_formatting: bool) -> dict:
+    result = {"sha256": digest(content), "mode": mode}
+    if python_formatting and path.endswith(".py") and len(content) <= 1_000_000:
+        try:
+            tree = ast.parse(content, type_comments=True)
+            result["python_ast_sha256"] = digest(ast.dump(tree, include_attributes=False).encode())
+        except (SyntaxError, ValueError, RecursionError):
+            pass  # Unparseable or oversized files retain exact-byte comparison.
+    return result
 
 
 class Repository:
@@ -63,7 +87,9 @@ class Repository:
                 raise VerixError("Symlink evidence is not supported")
         return str(PurePosixPath(name))
 
-    def fingerprint(self, path: str, revision: str | None = None) -> dict:
+    def fingerprint(
+        self, path: str, revision: str | None = None, *, python_formatting: bool = False
+    ) -> dict:
         path = self.path(path)
         if revision is not None:
             sha = self.revision(revision)
@@ -74,10 +100,9 @@ class Repository:
             mode, kind, blob = metadata.split()
             if kind != b"blob" or mode == b"120000":
                 raise VerixError("Only regular files can be evidence")
-            return {
-                "sha256": digest(self.git("cat-file", "blob", blob.decode())),
-                "mode": mode.decode(),
-            }
+            return fingerprint(
+                self.git("cat-file", "blob", blob.decode()), mode.decode(), path, python_formatting
+            )
         target = self.root / path
         try:
             before = target.stat()
@@ -91,10 +116,7 @@ class Repository:
             if os.name == "nt":
                 entry = self.git("ls-files", "--stage", "-z", "--", path)
                 mode = entry.split(b" ", 1)[0].decode() if entry else "100644"
-            return {
-                "sha256": digest(content),
-                "mode": mode,
-            }
+            return fingerprint(content, mode, path, python_formatting)
         except FileNotFoundError:
             return {"sha256": None, "mode": None}
 

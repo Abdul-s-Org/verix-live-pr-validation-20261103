@@ -15,6 +15,7 @@ DEFAULT = {
     "risk": {},
     "exclude": [".env*", ".verix/*"],
     "checks": {},
+    "ignore_python_formatting": False,
 }
 
 
@@ -65,6 +66,8 @@ def load(path: Path) -> dict:
         for k, v in result["checks"].items()
     ):
         raise VerixError("checks must map names to nonempty argument lists")
+    if type(result["ignore_python_formatting"]) is not bool:
+        raise VerixError("ignore_python_formatting must be a boolean")
     return result
 
 

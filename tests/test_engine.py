@@ -392,6 +392,43 @@ class EngineTests(unittest.TestCase):
             self.engine.repo.fingerprint("a.py"), self.engine.repo.fingerprint("a.py", "HEAD")
         )
 
+    def test_python_formatting_is_explicit_and_keeps_behavior_changes_suspect(self):
+        self.engine.policy["ignore_python_formatting"] = True
+        claim = self.claim()
+        self.write("a.py", "# comment\nVALUE=1\n")
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "valid")
+        receipts.validate(receipts.export(self.engine, self.session))
+        self.engine.policy["ignore_python_formatting"] = False
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "suspect")
+        self.engine.policy["ignore_python_formatting"] = True
+        self.write("a.py", "VALUE = 2\n")
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "suspect")
+        self.write("a.py", "VALUE = (\n")
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "suspect")
+
+    def test_python_normalization_preserves_docstrings_and_type_comments(self):
+        from verix.engine.git import fingerprint, equivalent
+
+        for before, after in (
+            (b'"before"\nx=1\n', b'"after"\nx=1\n'),
+            (b"x=1 # type: int\n", b"x=1 # type: str\n"),
+        ):
+            left = fingerprint(before, "100644", "a.py", True)
+            right = fingerprint(after, "100644", "a.py", True)
+            self.assertFalse(equivalent(left, right, True))
+        a = fingerprint(b"X = 1\n", "100644", "a.py", True)
+        b = fingerprint(b"X=1\n", "100755", "a.py", True)
+        self.assertFalse(equivalent(a, b, True))
+        self.assertNotIn("python_ast_sha256", fingerprint(b"x=1", "100644", "a.txt", True))
+
+    def test_successful_verification_expires_after_policy_change(self):
+        claim = self.claim()
+        self.write("a.py", "VALUE = 2\n")
+        self.engine.verify(self.session, claim, reaffirm=True)
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "valid")
+        self.engine.policy["mode"] = "blocking"
+        self.assertEqual(self.engine.analyze(self.session)["states"][claim], "suspect")
+
 
 if __name__ == "__main__":
     unittest.main()

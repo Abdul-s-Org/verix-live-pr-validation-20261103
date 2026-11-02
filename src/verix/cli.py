@@ -72,6 +72,7 @@ def parser():
         .add_parser("run")
     )
     bench.add_argument("--scenarios", type=Path)
+    bench.add_argument("--ignore-python-formatting", action="store_true")
     return p
 
 
@@ -207,7 +208,7 @@ def main() -> None:
         if args.command == "bench":
             from verix.benchmark import run as benchmark
 
-            result = benchmark(args.scenarios)
+            result = benchmark(args.scenarios, args.ignore_python_formatting)
         elif args.command == "ci":
             raise SystemExit(ci(args))
         else:

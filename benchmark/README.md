@@ -28,6 +28,10 @@ Recall is `TP / (TP + FN)` and precision is `TP / (TP + FP)`. Unknown affected c
 
 Current high-risk fixtures expose false blocks on both formatting-only cases: 2 of 7 valid actions. This exceeds the PRD's under-10% false-block target. Do not weaken labels, lower risk solely to improve scores, or treat fixture results as release evidence. File-hash detection cannot establish semantic equivalence.
 
+## Optional normalization comparison
+
+`verix bench run --ignore-python-formatting` explicitly enables the same Python AST normalization for both Verix and the independently calculated baseline. Output records the flag. The configured fixture run resolves the two formatting false blocks without changing any labels or risk levels; affected/hidden cases retain their expected detections/misses. The default exact-byte run still exposes those false blocks. Neither run replaces external review or real-agent evidence.
+
 ## Review and release gate
 
 Labels remain **draft** until an independent reviewer checks every claim, evidence link, action-validity label, and seeded change. Review hidden-dependency and benign cases especially carefully. Compare the documented direct-evidence baseline with a realistic existing tool before claiming a transitive advantage.

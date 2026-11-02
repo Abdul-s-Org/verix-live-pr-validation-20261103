@@ -69,6 +69,10 @@
                       "100644",
                       "100755"
                     ]
+                  },
+                  "python_ast_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
                   }
                 },
                 "required": [

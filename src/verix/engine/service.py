@@ -5,7 +5,7 @@ import subprocess
 from uuid import uuid4
 
 from verix.engine import policy
-from verix.engine.git import Repository, VerixError
+from verix.engine.git import Repository, VerixError, equivalent
 from verix.engine.store import Store
 
 
@@ -21,6 +21,11 @@ class Engine:
         )
         self.store = Store(self.repo.root)
 
+    def fingerprint(self, path, revision=None):
+        return self.repo.fingerprint(
+            path, revision, python_formatting=self.policy.get("ignore_python_formatting", False)
+        )
+
     def start(self, agent: str, session: str | None = None) -> str:
         session = session or identifier()
         with self.store.transaction():
@@ -35,7 +40,7 @@ class Engine:
         if policy.excluded(self.policy, path):
             raise VerixError("Evidence path excluded by policy")
         base = self.repo.revision()
-        fingerprint = self.repo.fingerprint(path)
+        fingerprint = self.fingerprint(path)
         if fingerprint["sha256"] is None:
             raise VerixError("Cannot capture missing file")
         if base != self.repo.revision():
@@ -108,12 +113,20 @@ class Engine:
                 raise VerixError("Invalid evidence graph: cycle or missing node")
             value = nodes[node]
             if value["kind"] == "observation":
-                current = self.repo.fingerprint(value["path"], revision if head else None)
+                current = self.fingerprint(value["path"], revision if head else None)
                 fingerprints[node] = current
                 if not value["complete"]:
                     state = "unknown"
                 else:
-                    state = "valid" if value["fingerprint"] == current else "suspect"
+                    state = (
+                        "valid"
+                        if equivalent(
+                            value["fingerprint"],
+                            current,
+                            self.policy.get("ignore_python_formatting", False),
+                        )
+                        else "suspect"
+                    )
                 reasons[node] = [
                     {
                         "path": value["path"],
@@ -154,7 +167,11 @@ class Engine:
                 verification = value.get("verification")
                 if verification and verification["state"] == "invalid":
                     state = "invalid"
-                elif verification and verification["revision"] == revision:
+                elif (
+                    verification
+                    and verification["revision"] == revision
+                    and verification.get("policy_hash") == policy.policy_hash(self.policy)
+                ):
                     bound = verification["fingerprints"]
                     if bound == {key: fingerprints[key] for key in bound}:
                         state = verification["state"]
@@ -258,6 +275,7 @@ class Engine:
         value = {k: v for k, v in value.items() if k not in ("id", "kind")}
         value["verification"] = {
             "state": state,
+            "policy_hash": policy.policy_hash(self.policy),
             "revision": report["revision"],
             "fingerprints": report["fingerprints"],
         }

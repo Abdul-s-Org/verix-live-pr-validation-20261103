@@ -35,8 +35,20 @@ def validate(data: dict) -> dict:
             if any(not isinstance(node[k], str) or not node[k] for k in ("path", "revision")):
                 raise VerixError("Invalid observation path or revision")
             fp = node["fingerprint"]
-            if not isinstance(fp, dict) or set(fp) != {"sha256", "mode"}:
+            if (
+                not isinstance(fp, dict)
+                or not {"sha256", "mode"} <= set(fp)
+                or set(fp) - {"sha256", "mode", "python_ast_sha256"}
+            ):
                 raise VerixError("Invalid fingerprint")
+            if "python_ast_sha256" in fp:
+                value = fp["python_ast_sha256"]
+                if (
+                    not isinstance(value, str)
+                    or len(value) != 64
+                    or any(c not in "0123456789abcdef" for c in value)
+                ):
+                    raise VerixError("Invalid Python AST hash")
             h = fp["sha256"]
             if (
                 not isinstance(h, str)

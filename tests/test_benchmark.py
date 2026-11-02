@@ -100,6 +100,15 @@ class BenchmarkTests(unittest.TestCase):
                         benchmark.run(path)
                     git.assert_not_called()
 
+    def test_opt_in_formatting_applies_to_both_conditions(self):
+        report = benchmark.run(ignore_python_formatting=True)
+        for condition in ("file_hash", "verix"):
+            self.assertEqual(report["conditions"][condition]["false_blocks"], 0)
+        self.assertEqual(report["conditions"]["verix"]["tp"], 63)
+        self.assertEqual(report["conditions"]["verix"]["fn"], 6)
+        self.assertTrue(report["ignore_python_formatting"])
+        self.assertFalse(self.report["ignore_python_formatting"])
+
     def test_load_errors_are_actionable(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "scenarios.json"

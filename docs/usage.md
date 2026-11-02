@@ -15,6 +15,7 @@ exclude:
   - '.env*'
   - '.verix/*'
   - 'secrets/*'
+ignore_python_formatting: false
 checks:
   auth: ['python', '-m', 'pytest', 'tests/test_auth.py']
 ```
@@ -24,6 +25,12 @@ The highest matching risk wins; unmatched paths are medium. Path patterns use Py
 Current checks conservatively consider all claims/decisions/actions in a session, rather than infer which claims a target file depends on. Use separate sessions for unrelated work. Alternative evidence sources require `claim add --alternative`; without it all listed sources are required. Use repeated `--parent` arguments for transitive relationships. No automatic semantic inference is performed.
 
 A claim without evidence is unknown. `session complete --ack-limitations` acknowledges the operator's capture assessment; it does not prove hidden dependencies are covered. Low-risk unknown evidence may be allowed by policy with an explicit incomplete input in the decision; medium/high risk remains unresolved.
+
+## Optional Python formatting normalization
+
+`ignore_python_formatting: true` retains exact content hashes and additionally records a Python AST digest when capturing a `.py` file. If bytes change but the parsed structure and Git mode match, the observation remains supported under that policy. It ignores whitespace and ordinary comments, but preserves docstrings and type comments. Invalid syntax, files above 1 MB, and other languages fall back to exact hashes. Enabling the option requires fresh reads; old receipts without AST digests remain conservative. The option is off by default because source-sensitive tooling can depend on formatting. This does not prove semantic correctness.
+
+Successful verifications are bound to the complete policy hash as well as evidence/revisions. Editing the policy expires those approvals.
 
 ## Receipts and PR checks
 

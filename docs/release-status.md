@@ -10,7 +10,7 @@ The previous implementation passed 29 tests on Python 3.14, including Hypothesis
 
 ## Benchmark milestone
 
-Replaced the repeated two-claim examples with 30 distinct multi-file fixtures, three-level dependency chains, and unrelated controls. Inputs are validated before fixture creation; labels remain separate from engine results. Hash-baseline results are calculated directly from fingerprints, and raw per-case decisions/commit IDs are emitted. Blocking-mode scoring exposes two false blocks among seven valid actions, so the false-block release gate currently fails. Independent label review and real-agent trials are still required before this milestone's acceptance gate can close.
+Replaced the repeated two-claim examples with 30 distinct multi-file fixtures, three-level dependency chains, and unrelated controls. Inputs are validated before fixture creation; labels remain separate from engine results. Hash-baseline results are calculated directly from fingerprints, and raw per-case decisions/commit IDs are emitted. Default exact-byte blocking exposes two false blocks among seven valid actions. The optional Python-formatting configuration eliminates those two fixture false blocks for both guard conditions while retaining the affected detections; neither configuration is real-world release evidence. Independent label review and real-agent trials are still required before this milestone's acceptance gate can close.
 
 ## Cross-platform CI fixes
 
