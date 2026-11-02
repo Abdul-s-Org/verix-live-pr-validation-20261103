@@ -75,3 +75,9 @@ Keep a private backup of `.verix/` if audit history matters. SQLite schema versi
 The Claude adapter follows the official [hook reference](https://code.claude.com/docs/en/hooks), using command hooks and `PreToolUse` deny output. It deliberately treats unrecognized Read responses as incomplete. Validate against a real Claude Code session before rollout.
 
 Workflow isolation follows GitHub's [secure-use guidance](https://docs.github.com/en/actions/reference/security/secure-use). The job status supplies the PR check; no separate GitHub App or Check Runs API is needed for this release.
+
+## Automated acceptance commands
+
+After installing development dependencies, run the test/coverage and Ruff commands in README, build with `python -m build`, then run `python scripts/smoke_install.py` and `python scripts/check_performance.py`. The smoke check installs the built wheel into a fresh environment, verifies the packaged 30-case benchmark, and asserts installation stays below ten minutes. The performance check uses 5,000 synthetic files and 20 local hook-command samples without model calls; it reports median/p95 and whether the proposed latency targets were met.
+
+CI runs these on Linux, macOS, and Windows and uploads `verix-benchmark.json` and `verix-performance.json`. Hardware/runner contention can affect timing; inspect the measurements before closing the release gate. These checks do not run paid agents, post test PR comments, change branch protection, or publish a release.

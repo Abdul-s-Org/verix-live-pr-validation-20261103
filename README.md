@@ -6,7 +6,7 @@ Verix records observed coding-agent reads and explicit claims, detects changed e
 
 ## Install and develop
 
-Use Python 3.12 or newer, Git, Linux or macOS:
+Use Python 3.12 or newer and Git. CI tests Linux, macOS, and Windows. On Linux/macOS:
 
 ```sh
 python3 -m venv .venv
@@ -18,6 +18,8 @@ ruff check .
 ruff format --check .
 python -m build
 ```
+
+On Windows PowerShell, create and activate the environment with `py -3.12 -m venv .venv` and `.venv\Scripts\Activate.ps1`, then run the same `python -m pip`, pytest, Ruff, and build commands above. The CI Windows engine/CLI checks do not substitute for real Claude Code hook-shell validation.
 
 The runtime dependency is PyYAML. With that available, `PYTHONPATH=src python3 -m unittest discover -s tests -v` runs the local tests without installing the development toolchain; Hypothesis tests are skipped when unavailable.
 

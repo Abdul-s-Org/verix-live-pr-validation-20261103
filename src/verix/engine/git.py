@@ -84,7 +84,7 @@ class Repository:
             not name
             or name == "."
             or ".." in path.parts
-            or any(os.path.normcase(part) == ".git" for part in path.parts)
+            or any(part.casefold() == ".git" for part in path.parts)
         ):
             raise VerixError("Path must name a file inside the repository")
         current = self.root

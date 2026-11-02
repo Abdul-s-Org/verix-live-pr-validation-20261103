@@ -97,3 +97,58 @@ class HookTests(unittest.TestCase):
             with self.assertRaises(VerixError):
                 install(self.root)
             self.assertEqual(target.read_text(), before)
+
+    def test_two_sessions_hold_stale_edit_until_read_and_reaffirm(self):
+        self.engine.policy["mode"] = "blocking"
+        self.engine.policy["risk"] = {"a.py": "high"}
+        handle(self.engine, self.payload)
+        handle(
+            self.engine,
+            {
+                **self.payload,
+                "hook_event_name": "PostToolUse",
+                "tool_response": {"file": {"content": "VALUE = 1\n"}},
+            },
+        )
+        claim = self.engine.claim("session", "Module exports VALUE", ["a.py"], [])
+        other = self.engine.start("agent-b")
+        self.engine.observe(other, "a.py")
+        self.engine.claim(other, "Change VALUE to 2", ["a.py"], [])
+        with self.engine.store.transaction():
+            self.engine.store.db.execute("UPDATE sessions SET incomplete=0")
+        write = {
+            "session_id": other,
+            "tool_use_id": "write",
+            "tool_name": "Write",
+            "hook_event_name": "PreToolUse",
+            "tool_input": {"file_path": "a.py"},
+        }
+        result = handle(self.engine, write)
+        self.assertIn("Verix allow", result["hookSpecificOutput"]["additionalContext"])
+        (self.root / "a.py").write_text("VALUE = 2\n", newline="\n")
+        handle(self.engine, {**write, "hook_event_name": "PostToolUse"})
+        edit = {
+            "session_id": "session",
+            "tool_use_id": "edit",
+            "tool_name": "Edit",
+            "hook_event_name": "PreToolUse",
+            "tool_input": {"file_path": "a.py"},
+        }
+        self.assertEqual(
+            handle(self.engine, edit)["hookSpecificOutput"]["permissionDecision"], "deny"
+        )
+        reread = {**self.payload, "tool_use_id": "reread"}
+        handle(self.engine, reread)
+        handle(
+            self.engine,
+            {
+                **reread,
+                "hook_event_name": "PostToolUse",
+                "tool_response": {"file": {"content": "VALUE = 2\n"}},
+            },
+        )
+        # A fresh read alone cannot attest that the old claim is true.
+        self.assertEqual(self.engine.analyze("session")["states"][claim], "suspect")
+        self.engine.verify("session", claim, reaffirm=True)
+        result = handle(self.engine, {**edit, "tool_use_id": "edit-after-review"})
+        self.assertIn("Verix allow", result["hookSpecificOutput"]["additionalContext"])

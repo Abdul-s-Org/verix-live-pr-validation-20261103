@@ -130,7 +130,7 @@ class EngineTests(unittest.TestCase):
         self.assertIsNotNone(self.engine.repo.fingerprint("a.py", base)["sha256"])
 
     def test_path_boundaries_and_exclusions(self):
-        for value in ("../outside", ".git/config", "/", "."):
+        for value in ("../outside", ".git/config", ".GIT/config", "/", "."):
             with self.assertRaises(VerixError):
                 self.engine.repo.path(value)
         self.write(".env", "SECRET=hidden")

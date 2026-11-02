@@ -10,6 +10,9 @@ on:
         default: main
 permissions:
   contents: read
+concurrency:
+  group: verix-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 jobs:
   analyze:
     if: github.event_name == 'pull_request'
@@ -71,6 +74,12 @@ jobs:
           script: |
             const fs = require('fs');
             const marker = '<!-- verix-report -->';
+            const current = await github.rest.pulls.get({ ...context.repo, pull_number: context.issue.number });
+            const event = context.payload.pull_request;
+            if (current.data.head.sha !== event.head.sha || current.data.base.sha !== event.base.sha) {
+              core.info('A newer PR revision exists; leaving its report unchanged.');
+              return;
+            }
             let report;
             try { report = JSON.parse(fs.readFileSync('report/verix-report.json', 'utf8')); }
             catch { report = { verdict: 'unresolved' }; }
@@ -79,6 +88,6 @@ jobs:
             const mode = report.mode === 'blocking' ? 'blocking' : 'advisory';
             const body = `${marker}\n### Verix: ${verdict}\nMode: ${mode}. Inspect the workflow artifact for files, revisions, and resolving checks.\nReceipts are self-reported; hidden dependencies are not covered.\n[View run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
             const comments = await github.paginate(github.rest.issues.listComments, { ...context.repo, issue_number: context.issue.number });
-            const previous = comments.find(c => c.user.type === 'Bot' && c.body.startsWith(marker));
+            const previous = comments.find(c => c.user.type === 'Bot' && c.body?.startsWith(marker));
             if (previous) await github.rest.issues.updateComment({ ...context.repo, comment_id: previous.id, body });
             else await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
