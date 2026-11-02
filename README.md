@@ -68,6 +68,14 @@ verix init
 verix session start --agent manual
 ```
 
+Add these entries to your project's `.gitignore` to keep local state out of commits;
+`verix init` does not edit that file:
+
+```gitignore
+.verix/
+.claude/settings.local.json
+```
+
 Copy the returned session ID. Replace `SESSION_ID` below and choose an existing file in your project:
 
 ```sh

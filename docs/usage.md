@@ -2,7 +2,7 @@
 
 ## Repository policy
 
-`verix init` creates `.verix.yml` only when absent. Keep it in version control. Runtime state is ignored under `.verix/state.sqlite3`; never commit that database. Local Claude settings should also stay untracked.
+`verix init` creates `.verix.yml` only when absent. Keep it in version control. Runtime state is stored under `.verix/state.sqlite3`; never commit that database. Add `.verix/` and `.claude/settings.local.json` to the target project's `.gitignore`; initialization does not edit its ignore rules.
 
 ```yaml
 version: 1
