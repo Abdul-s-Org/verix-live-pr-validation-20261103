@@ -6,3 +6,10 @@ __pycache__/
 .hypothesis/
 build/
 dist/
+
+.verix/
+.coverage
+htmlcov/
+.ruff_cache/
+
+.claude/settings.local.json

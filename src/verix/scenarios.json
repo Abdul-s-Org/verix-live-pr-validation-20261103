@@ -1,0 +1,212 @@
+[
+  {
+    "id": "rename-01",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "rename-02",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "rename-03",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "rename-04",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "rename-05",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "rename-06",
+    "family": "rename",
+    "before": "def load(): pass\n",
+    "after": "",
+    "affected": true
+  },
+  {
+    "id": "behavior-01",
+    "family": "behavior",
+    "before": "AUTH = \"jwt\"\n",
+    "after": "AUTH = \"session\"\n",
+    "affected": true
+  },
+  {
+    "id": "behavior-02",
+    "family": "behavior",
+    "before": "RETRIES = 3\n",
+    "after": "RETRIES = 0\n",
+    "affected": true
+  },
+  {
+    "id": "behavior-03",
+    "family": "behavior",
+    "before": "CACHE = True\n",
+    "after": "CACHE = False\n",
+    "affected": true
+  },
+  {
+    "id": "behavior-04",
+    "family": "behavior",
+    "before": "ORDER = \"asc\"\n",
+    "after": "ORDER = \"desc\"\n",
+    "affected": true
+  },
+  {
+    "id": "behavior-05",
+    "family": "behavior",
+    "before": "TIMEOUT = 30\n",
+    "after": "TIMEOUT = 1\n",
+    "affected": true
+  },
+  {
+    "id": "behavior-06",
+    "family": "behavior",
+    "before": "STRICT = False\n",
+    "after": "STRICT = True\n",
+    "affected": true
+  },
+  {
+    "id": "config-01",
+    "family": "config",
+    "before": "COLUMN = \"name\"\n",
+    "after": "COLUMN = \"full_name\"\n",
+    "affected": true
+  },
+  {
+    "id": "config-02",
+    "family": "config",
+    "before": "PORT = 80\n",
+    "after": "PORT = 443\n",
+    "affected": true
+  },
+  {
+    "id": "config-03",
+    "family": "config",
+    "before": "REGION = \"us\"\n",
+    "after": "REGION = \"eu\"\n",
+    "affected": true
+  },
+  {
+    "id": "config-04",
+    "family": "config",
+    "before": "ENV = \"KEY\"\n",
+    "after": "ENV = \"TOKEN\"\n",
+    "affected": true
+  },
+  {
+    "id": "config-05",
+    "family": "config",
+    "before": "TABLE = \"users\"\n",
+    "after": "TABLE = \"accounts\"\n",
+    "affected": true
+  },
+  {
+    "id": "dependency-01",
+    "family": "dependency",
+    "before": "API = \"v1\"\n",
+    "after": "API = \"v2\"\n",
+    "affected": true
+  },
+  {
+    "id": "dependency-02",
+    "family": "dependency",
+    "before": "RETURN = \"list\"\n",
+    "after": "RETURN = \"iterator\"\n",
+    "affected": true
+  },
+  {
+    "id": "dependency-03",
+    "family": "dependency",
+    "before": "SYNC = True\n",
+    "after": "SYNC = False\n",
+    "affected": true
+  },
+  {
+    "id": "dependency-04",
+    "family": "dependency",
+    "before": "PARAM = \"name\"\n",
+    "after": "PARAM = \"id\"\n",
+    "affected": true
+  },
+  {
+    "id": "irrelevant-01",
+    "family": "irrelevant",
+    "before": "VALUE = 1\n",
+    "after": "Note 0\n",
+    "affected": false
+  },
+  {
+    "id": "irrelevant-02",
+    "family": "irrelevant",
+    "before": "VALUE = 1\n",
+    "after": "Note 1\n",
+    "affected": false
+  },
+  {
+    "id": "irrelevant-03",
+    "family": "irrelevant",
+    "before": "VALUE = 1\n",
+    "after": "Note 2\n",
+    "affected": false
+  },
+  {
+    "id": "irrelevant-04",
+    "family": "irrelevant",
+    "before": "VALUE = 1\n",
+    "after": "Note 3\n",
+    "affected": false
+  },
+  {
+    "id": "irrelevant-05",
+    "family": "irrelevant",
+    "before": "VALUE = 1\n",
+    "after": "Note 4\n",
+    "affected": false
+  },
+  {
+    "id": "formatting-01",
+    "family": "formatting",
+    "before": "VALUE=1\n",
+    "after": "VALUE = 1\n",
+    "affected": false
+  },
+  {
+    "id": "formatting-02",
+    "family": "formatting",
+    "before": "VALUE = 1\n",
+    "after": "# comment\nVALUE = 1\n",
+    "affected": false
+  },
+  {
+    "id": "hidden-01",
+    "family": "hidden",
+    "before": "CONFIG = \"a\"\n",
+    "after": "CONFIG = \"b\"\n",
+    "affected": true
+  },
+  {
+    "id": "hidden-02",
+    "family": "hidden",
+    "before": "CONFIG = \"a\"\n",
+    "after": "CONFIG = \"b\"\n",
+    "affected": true
+  }
+]

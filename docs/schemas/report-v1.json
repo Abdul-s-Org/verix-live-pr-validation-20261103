@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session",
+    "revision",
+    "states",
+    "reasons",
+    "fingerprints",
+    "nodes",
+    "coverage"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "session": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "valid",
+          "suspect",
+          "invalid",
+          "unknown"
+        ]
+      }
+    },
+    "reasons": {
+      "type": "object"
+    },
+    "fingerprints": {
+      "type": "object"
+    },
+    "nodes": {
+      "type": "object"
+    },
+    "coverage": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
