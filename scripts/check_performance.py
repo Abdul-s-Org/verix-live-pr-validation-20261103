@@ -1,9 +1,11 @@
 """Measure the local hook process on a 5,000-file synthetic repository; no model calls."""
 
 import json
+import io
 import math
 import os
 from pathlib import Path
+import pstats
 import statistics
 import subprocess
 import sys
@@ -76,6 +78,30 @@ with tempfile.TemporaryDirectory() as directory:
         assert "Verix allow" in context["additionalContext"], result.stdout
     median = statistics.median(timings)
     p95 = sorted(timings)[math.ceil(0.95 * len(timings)) - 1]
+    payload["tool_use_id"] = "profile-sample"
+    profile_path = root / "hook-profile.pstats"
+    profiled = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "cProfile",
+            "-o",
+            str(profile_path),
+            "-m",
+            "verix",
+            "--repo",
+            directory,
+            "hook",
+        ],
+        input=json.dumps(payload),
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=10,
+    )
+    assert "Verix allow" in json.loads(profiled.stdout)["hookSpecificOutput"]["additionalContext"]
+    profile_text = io.StringIO()
+    pstats.Stats(str(profile_path), stream=profile_text).sort_stats("cumulative").print_stats(40)
     report = {
         "files": 5000,
         "observations": 10,
@@ -85,6 +111,7 @@ with tempfile.TemporaryDirectory() as directory:
         "median_seconds": median,
         "p95_seconds": p95,
         "targets_met": median <= 0.3 and p95 <= 1,
+        "profile_top": profile_text.getvalue(),
         "limits": "Simulated hook command process; excludes actual agent transport and model latency.",
     }
     output_directory = (
