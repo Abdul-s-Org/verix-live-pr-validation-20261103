@@ -13,11 +13,14 @@ from verix import receipts
 EXIT = {"allow": 0, "verify": 10, "block": 20, "unresolved": 30}
 
 
-def parser():
+def parser(hook_only=False):
     p = argparse.ArgumentParser(prog="verix", description="Detect stale coding-agent assumptions.")
     p.add_argument("--version", action="version", version="%(prog)s 0.1.0")
     p.add_argument("--repo", default=".")
     commands = p.add_subparsers(dest="command")
+    commands.add_parser("hook")
+    if hook_only:
+        return p
     init = commands.add_parser("init")
     init.add_argument("--hooks", action="store_true")
     session = commands.add_parser("session").add_subparsers(dest="operation", required=True)
@@ -65,7 +68,6 @@ def parser():
     ci.add_argument("--receipt", required=True)
     ci.add_argument("--base", required=True)
     ci.add_argument("--head", required=True)
-    commands.add_parser("hook")
     bench = (
         commands.add_parser("bench")
         .add_subparsers(dest="operation", required=True)
@@ -199,7 +201,9 @@ def ci(args):
 
 
 def main() -> None:
-    p = parser()
+    argv = sys.argv[1:]
+    hook_only = argv == ["hook"] or (len(argv) == 3 and argv[0] == "--repo" and argv[2] == "hook")
+    p = parser(hook_only=hook_only)
     args = p.parse_args()
     if not args.command:
         p.print_help()

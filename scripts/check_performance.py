@@ -31,7 +31,8 @@ with tempfile.TemporaryDirectory() as directory:
             ],
             check=True,
             capture_output=True,
-            timeout=60,
+            # Fixture setup is outside hook timings and can be slow on shared Windows runners.
+            timeout=180,
         )
 
     git("init", "-q", "--template=")
