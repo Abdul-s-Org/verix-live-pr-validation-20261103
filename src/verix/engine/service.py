@@ -5,7 +5,7 @@ import subprocess
 from uuid import uuid4
 
 from verix.engine import policy
-from verix.engine.git import Repository, VerixError, equivalent
+from verix.engine.git import WINDOWS, Repository, VerixError, equivalent
 from verix.engine.store import Store
 
 
@@ -21,14 +21,19 @@ class Engine:
         )
         self.store = Store(self.repo.root)
 
-    def fingerprint(self, path, revision=None):
+    def fingerprint(self, path, revision=None, index_modes=None):
         return self.repo.fingerprint(
-            path, revision, python_formatting=self.policy.get("ignore_python_formatting", False)
+            path,
+            revision,
+            python_formatting=self.policy.get("ignore_python_formatting", False),
+            index_modes=index_modes,
         )
 
     def start(self, agent: str, session: str | None = None) -> str:
         session = session or identifier()
         with self.store.transaction():
+            if self.store.db.execute("SELECT 1 FROM sessions WHERE id=?", (session,)).fetchone():
+                return session
             self.store.db.execute(
                 "INSERT OR IGNORE INTO sessions(id,base,agent) VALUES(?,?,?)",
                 (session, self.repo.revision(), agent),
@@ -115,6 +120,7 @@ class Engine:
         nodes = self.store.nodes(session)
         revision = self.repo.revision(head or "HEAD")
         states, reasons, fingerprints = {}, {}, {}
+        index_modes = self.repo.index_modes() if WINDOWS and not head else None
 
         def visit(node, trail):
             if node in states:
@@ -123,7 +129,7 @@ class Engine:
                 raise VerixError("Invalid evidence graph: cycle or missing node")
             value = nodes[node]
             if value["kind"] == "observation":
-                current = self.fingerprint(value["path"], revision if head else None)
+                current = self.fingerprint(value["path"], revision if head else None, index_modes)
                 fingerprints[node] = current
                 if not value["complete"]:
                     state = "unknown"
@@ -197,6 +203,8 @@ class Engine:
             visit(node, set())
         if revision != self.repo.revision(head or "HEAD"):
             raise VerixError("Revision changed during analysis; retry")
+        if index_modes is not None and index_modes != self.repo.index_modes():
+            raise VerixError("Git index modes changed during analysis; retry")
         return {
             "schema_version": 1,
             "session": session,

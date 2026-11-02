@@ -442,6 +442,33 @@ class EngineTests(unittest.TestCase):
         with patch.object(self.engine.store, "nodes", return_value=ordered):
             self.assertEqual(self.engine.analyze(self.session)["states"][claim], "valid")
 
+    def test_windows_mode_reads_are_batched_and_index_races_rejected(self):
+        from unittest.mock import patch
+
+        self.claim()
+        self.claim("b.py")
+        with patch("verix.engine.service.WINDOWS", True):
+            with patch.object(
+                self.engine.repo, "index_modes", wraps=self.engine.repo.index_modes
+            ) as modes:
+                self.engine.analyze(self.session)
+                self.assertEqual(modes.call_count, 2)
+            before = self.engine.repo.index_modes()
+            changed = {**before, "a.py": "100755"}
+            with patch.object(self.engine.repo, "index_modes", side_effect=[before, changed]):
+                with self.assertRaisesRegex(VerixError, "index modes changed"):
+                    self.engine.analyze(self.session)
+
+    def test_resuming_session_preserves_base_without_redundant_git_call(self):
+        from unittest.mock import patch
+
+        base = self.engine.store.session(self.session)["base"]
+        with patch.object(
+            self.engine.repo, "revision", side_effect=AssertionError("Unexpected Git call")
+        ):
+            self.assertEqual(self.engine.start("test", self.session), self.session)
+        self.assertEqual(self.engine.store.session(self.session)["base"], base)
+
 
 if __name__ == "__main__":
     unittest.main()

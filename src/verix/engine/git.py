@@ -6,6 +6,8 @@ import os
 from pathlib import Path, PurePosixPath
 import subprocess
 
+WINDOWS = os.name == "nt"
+
 
 class VerixError(Exception):
     """An actionable input or operational error."""
@@ -95,7 +97,12 @@ class Repository:
         return str(PurePosixPath(name))
 
     def fingerprint(
-        self, path: str, revision: str | None = None, *, python_formatting: bool = False
+        self,
+        path: str,
+        revision: str | None = None,
+        *,
+        python_formatting: bool = False,
+        index_modes: dict | None = None,
     ) -> dict:
         path = self.path(path)
         if revision is not None:
@@ -120,12 +127,26 @@ class Repository:
             if (before.st_mtime_ns, before.st_size) != (after.st_mtime_ns, after.st_size):
                 raise VerixError("File changed during capture; retry the read")
             mode = "100755" if os.access(target, os.X_OK) else "100644"
-            if os.name == "nt":
+            if index_modes is not None:
+                mode = index_modes.get(os.path.normcase(path), "100644")
+            elif WINDOWS:
                 entry = self.git("ls-files", "--stage", "-z", "--", path)
                 mode = entry.split(b" ", 1)[0].decode() if entry else "100644"
             return fingerprint(content, mode, path, python_formatting)
         except FileNotFoundError:
             return {"sha256": None, "mode": None}
+
+    def index_modes(self) -> dict:
+        modes = {}
+        for entry in self.git("ls-files", "--stage", "-z").split(b"\0"):
+            if not entry:
+                continue
+            metadata, path = entry.split(b"\t", 1)
+            mode, _, stage = metadata.split()
+            if stage != b"0":
+                raise VerixError("Resolve Git index conflicts before checking evidence")
+            modes[os.path.normcase(os.fsdecode(path))] = mode.decode()
+        return modes
 
     def changes(self, base: str, head: str) -> list[dict]:
         base, head = self.revision(base), self.revision(head)
