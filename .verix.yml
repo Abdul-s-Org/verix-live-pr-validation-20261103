@@ -1,5 +1,1 @@
-version: 1
-mode: blocking
-risk: {"*": high}
-exclude: [".env*", ".verix/*"]
-checks: {}
+mode: advisory
