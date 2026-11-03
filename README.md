@@ -20,7 +20,7 @@ Verix records the supporting evidence, flags the changed source, and follows the
 - Explicit claims, transitive dependencies, and independently declared alternative evidence.
 - Repository policies with advisory or blocking behavior and per-path risk levels.
 - Revision-, evidence-, and policy-bound verification with replayable decision history.
-- A Claude Code hook adapter for Read, Edit, Write, and session compaction.
+- Claude Code capture plus an experimental Codex adapter for exact `cat` reads and native patches.
 - Metadata-only session receipts and a reusable GitHub Actions PR workflow.
 - A reproducible 30-case fixture benchmark with raw results and baseline comparisons.
 
@@ -143,6 +143,16 @@ This merges handlers into `.claude/settings.local.json` without replacing existi
 
 Claims are explicit in this release. Reads through Bash, unsupported tools, or bypassed hooks are outside capture coverage. Windows CLI/engine checks run in CI; the actual Windows Claude Code hook shell still requires live validation.
 
+## Codex integration (experimental)
+
+```sh
+verix init --hooks --agent codex
+```
+
+This merges `.codex/hooks.json`. Start Codex from the repository root, enable its hooks feature, and review/trust the hooks through `/hooks`. Existing Codex configuration is preserved. See [Codex setup and live evidence](docs/codex.md).
+
+The adapter captures single literal `cat path` reads and checks every native `apply_patch` target. Register claims explicitly. Every read or unsupported command makes session capture incomplete; after reviewing evidence, use `verix session complete --session SESSION_ID --ack-limitations`. In blocking mode unsupported commands are denied. Start in advisory mode: this narrow adapter does not cover ordinary unrestricted shell workflows.
+
 ## Pull request checks
 
 Export and inspect a receipt, then include it in your branch. This redirection example works in Bash and PowerShell 7:
@@ -188,4 +198,4 @@ These run synthetic fixtures, not paid agents. Labels remain drafts pending inde
 - [Security and reporting](SECURITY.md)
 - [Product plan](docs/verix_prd.pdf) and [problem research](docs/verix_prob.pdf)
 
-Verix checks observed and declared evidence. It cannot prove a claim or pull request correct. Receipts are self-reported, and hooks are not a security boundary. The dashboard, hosted subscriptions, automatic LLM extraction, and other agent integrations are outside this release.
+Verix checks observed and declared evidence. It cannot prove a claim or pull request correct. Receipts are self-reported, and hooks are not a security boundary. The dashboard, hosted subscriptions, automatic LLM extraction, and integrations beyond Claude Code and the experimental Codex adapter are outside this release.

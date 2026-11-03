@@ -9,23 +9,28 @@ import tempfile
 from verix.engine.git import VerixError, digest
 
 
-def install(root):
-    directory = root / ".claude"
+def install(root, agent="claude-code"):
+    codex = agent == "codex"
+    directory = root / (".codex" if codex else ".claude")
     if directory.is_symlink() or directory.is_junction():
-        raise VerixError("Claude configuration directory cannot be a symlink")
+        raise VerixError("Agent configuration directory cannot be a symlink")
     directory.mkdir(exist_ok=True)
-    target = directory / "settings.local.json"
+    config = directory / "config.toml"
+    if codex and config.is_symlink():
+        raise VerixError("Agent configuration cannot be a symlink")
+    target = directory / ("hooks.json" if codex else "settings.local.json")
     if target.is_symlink():
-        raise VerixError("Claude settings cannot be a symlink")
+        raise VerixError("Agent settings cannot be a symlink")
     data = json.loads(target.read_text()) if target.exists() else {}
     if not isinstance(data, dict) or not isinstance(data.get("hooks", {}), dict):
-        raise VerixError("Claude settings and hooks must be JSON objects")
+        raise VerixError("Agent settings and hooks must be JSON objects")
     hooks = data.setdefault("hooks", {})
-    command = f"{shlex.quote(sys.executable)} -m verix hook"
+    subcommand = "codex-hook" if codex else "hook"
+    command = f"{shlex.quote(sys.executable)} -m verix {subcommand}"
     for event, matcher in (
         ("SessionStart", None),
-        ("PreToolUse", "Read|Edit|Write"),
-        ("PostToolUse", "Read|Edit|Write"),
+        ("PreToolUse", None if codex else "Read|Edit|Write"),
+        ("PostToolUse", None if codex else "Read|Edit|Write"),
         ("PreCompact", None),
     ):
         handler = {"type": "command", "command": command, "timeout": 5}
@@ -34,7 +39,7 @@ def install(root):
             entry["matcher"] = matcher
         entries = hooks.setdefault(event, [])
         if not isinstance(entries, list):
-            raise VerixError(f"Claude {event} hooks must be a list")
+            raise VerixError(f"Agent {event} hooks must be a list")
         if entry not in entries:
             entries.append(entry)
     with tempfile.NamedTemporaryFile(dir=directory, suffix=".json", delete=False) as output:
@@ -44,6 +49,9 @@ def install(root):
         temporary.replace(target)
     finally:
         temporary.unlink(missing_ok=True)
+    if codex and not config.exists():
+        with config.open("x", encoding="utf-8") as output:
+            output.write("[features]\nhooks = true\n")
 
 
 def handle(engine, payload: dict) -> dict:

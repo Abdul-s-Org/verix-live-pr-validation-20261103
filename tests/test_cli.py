@@ -23,7 +23,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("Detect stale coding-agent assumptions", result.stdout)
 
     def test_hook_parser_matches_full_validation(self):
-        for args in (["hook"], ["--repo", "project", "hook"]):
+        for args in (["hook"], ["--repo", "project", "hook"], ["codex-hook"]):
             self.assertEqual(
                 vars(parser(hook_only=True).parse_args(args)), vars(parser().parse_args(args))
             )
@@ -35,6 +35,7 @@ class CliTests(unittest.TestCase):
     def test_hook_text_does_not_change_command_routing(self):
         for args, fast in (
             (["hook"], True),
+            (["codex-hook"], True),
             (["--repo", "project", "hook"], True),
             (["claim", "add", "--session", "session", "hook"], False),
         ):

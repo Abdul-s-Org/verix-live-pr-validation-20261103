@@ -12,7 +12,7 @@ Version remains `0.1.0` while release acceptance is open. This is a working deve
 | 4. Capture/detection | Exact reads, optional Python AST digest, changes/renames/deletions/mode checks, root aliases, path/symlink protections | Actual-agent capture coverage must be measured |
 | 5. Impact engine | Transitive suspicion, unrelated controls, explicit alternative evidence groups, unknown evidence | Real repository dependency coverage is unproven |
 | 6. Policy/verification | Validated policy, allow/verify/block/unresolved, explicit reaffirmation/checks, revision/content/policy-bound approvals, deterministic replay | Human confirmation remains a trust input |
-| 7. CLI/hooks | Session lifecycle, Read/Edit/Write capture, idempotent settings merge, compaction persistence, concurrent-event/race regressions | Real Claude Code sessions and Windows hook-shell validation |
+| 7. CLI/hooks | Session lifecycle, Read/Edit/Write capture, idempotent settings merge, compaction persistence, concurrent-event/race regressions | Linux Codex narrow-path live evidence recorded; Claude sessions and Windows hook-shell validation remain |
 | 8. PR integration | Trusted-base policy, untrusted receipts, exact SHAs, fork permission isolation, one-comment update, stale-run suppression, JSON artifacts | Live same-repository/fork PR permissions and branch protection |
 | 9. Evaluation/release | Installed-wheel benchmark smoke check and installation timing, 5,000-file simulated hook latency check, operational/security documentation | Reviewed real-agent trials, customer validation, final release decision |
 
@@ -20,13 +20,15 @@ Version remains `0.1.0` while release acceptance is open. This is a working deve
 
 The path-fix CI run passed all Linux, macOS, and Windows jobs: [run 41518933457](https://github.com/abdulwasea89/Verix/actions/runs/41518933457). Each job includes tests, coverage, lint/format, package building, and installed-wheel benchmark execution. Follow-up commits add further hook, PR, and performance checks; inspect their own runs before relying on them.
 
-The current local suite passes 69 tests plus parameterized subtests, with approximately 95% engine statement coverage on Python 3.14. Workflow JavaScript tests execute under Node.js with mocked GitHub APIs; they do not post comments. CI supplies Node.js and runs the suite on Python 3.12 across Linux, macOS, and Windows.
+The current local suite passes 77 tests plus parameterized subtests, with 95.53% engine statement coverage on Python 3.14. Workflow JavaScript tests execute under Node.js with mocked GitHub APIs; they do not post comments. CI supplies Node.js and runs the suite on Python 3.12 across Linux, macOS, and Windows.
 
 Windows latency now measures 281 ms median and 282 ms p95 across the unchanged 20-sample, 5,000-file fixture in [run 41531655667](https://github.com/abdulwasea89/Verix/actions/runs/41531655667), meeting the proposed 300 ms / 1 s targets on that runner. Earlier measurements reached 391 ms median after initial batching and varied above target during subsequent runs.
 
 The measured fix combines Git repository/revision discovery, limits mode queries to observed files, removes redundant filesystem checks, and avoids constructing unrelated command parsers for hook invocations. The discovery revision is consumed once and always checked again after evidence reads; stale discovery is refreshed once, and continuing races are rejected. Index snapshots bind content and file identity, including rewrites that restore original bytes. Linked worktrees and custom Git layouts retain full Git-based rechecks. Missing Windows mode-filter matches and platform command-length limits fall back to the complete index; other Git errors remain errors. Literal path queries prevent filename pattern expansion.
 
 These measurements cover simulated hook command processes, not actual Claude Code transport. They are hardware/runner dependent, not a service-level guarantee. CI uploads each platform's own measurements and a cumulative call profile, and explicitly reports target misses. Fixture-setup timeouts are separate from measured hook timings and runtime Git timeouts.
+
+The experimental Codex adapter has live Linux read, stale-denial, reaffirmation, patch-execution, resume, and audit-replay evidence. See [the setup and test limits](codex.md); this does not establish broad real-agent capture coverage. The current local simulated hook check measured 218 ms median / 252 ms p95 on 5,000 files.
 
 ## Benchmark limits
 
@@ -36,4 +38,4 @@ Default exact-byte blocking produces two false blocks among seven valid fixture 
 
 The user has deferred paid real-agent trials until implementation, commits/pushes, and automated checks are reported complete. Do not spend on the planned minimum 450 trials without a subsequent instruction. Independently reviewed labels, live PR rollout, branch protection, customer interviews, design partners, and a final release decision cannot be replaced with synthetic tests.
 
-No subscriptions, hosted history, dashboard, LLM claim extraction, Codex integration, or automatic release publishing are included in this V1 scope.
+A narrow Codex adapter was subsequently authorized; its live evidence and limits are recorded in [codex.md](codex.md). No subscriptions, hosted history, dashboard, LLM claim extraction, or automatic release publishing are included in this V1 scope.

@@ -19,10 +19,12 @@ def parser(hook_only=False):
     p.add_argument("--repo", default=".")
     commands = p.add_subparsers(dest="command")
     commands.add_parser("hook")
+    commands.add_parser("codex-hook")
     if hook_only:
         return p
     init = commands.add_parser("init")
     init.add_argument("--hooks", action="store_true")
+    init.add_argument("--agent", choices=["claude-code", "codex"], default="claude-code")
     session = commands.add_parser("session").add_subparsers(dest="operation", required=True)
     start = session.add_parser("start")
     start.add_argument("--agent", default="manual")
@@ -89,7 +91,7 @@ def run(args, engine):
         if args.hooks:
             from verix.hooks.claude import install
 
-            install(engine.repo.root)
+            install(engine.repo.root, args.agent)
         return {"initialized": str(engine.repo.root), "hooks": args.hooks}
     if args.command == "session":
         if args.operation == "start":
@@ -127,8 +129,11 @@ def run(args, engine):
         if args.operation == "export":
             return receipts.export(engine, args.session)
         return {"session": receipts.ingest(engine, receipts.read(args.file))}
-    if args.command == "hook":
-        from verix.hooks.claude import handle
+    if args.command in ("hook", "codex-hook"):
+        if args.command == "codex-hook":
+            from verix.hooks.codex import handle
+        else:
+            from verix.hooks.claude import handle
 
         raw = sys.stdin.read(2_000_001)
         if len(raw) > 2_000_000:
@@ -202,7 +207,10 @@ def ci(args):
 
 def main() -> None:
     argv = sys.argv[1:]
-    hook_only = argv == ["hook"] or (len(argv) == 3 and argv[0] == "--repo" and argv[2] == "hook")
+    hooks = ("hook", "codex-hook")
+    hook_only = (len(argv) == 1 and argv[0] in hooks) or (
+        len(argv) == 3 and argv[0] == "--repo" and argv[2] in hooks
+    )
     p = parser(hook_only=hook_only)
     args = p.parse_args()
     if not args.command:
@@ -233,7 +241,7 @@ def main() -> None:
         else:
             print(json.dumps(result, indent=2))
     except (VerixError, OSError, ValueError, TypeError, sqlite3.Error, RecursionError) as exc:
-        if args.command == "hook":
+        if args.command in ("hook", "codex-hook"):
             # Failure is visible; malformed policy cannot silently disable protected-edit enforcement.
             print(f"Verix operational error: {exc}", file=sys.stderr)
             raise SystemExit(2) from exc

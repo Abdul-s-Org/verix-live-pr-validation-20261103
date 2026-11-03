@@ -36,7 +36,7 @@ python -m pip install -e '.[dev]'
 | Location | Responsibility |
 | --- | --- |
 | `src/verix/engine/` | Git access, fingerprints, SQLite, graph analysis, and policy |
-| `src/verix/hooks/` | Claude Code capture and settings installation |
+| `src/verix/hooks/` | Claude Code/Codex capture and settings installation |
 | `src/verix/cli.py`, `src/verix/receipts.py` | Commands and metadata interchange |
 | `src/verix/benchmark.py`, `src/verix/scenarios.json` | Fixture execution, scoring, and draft labels |
 | `tests/` | Unit, subprocess integration, property, race, and workflow tests |
@@ -78,4 +78,4 @@ Use scoped, imperative commit subjects consistent with history, for example `fix
 
 Pull requests should state the problem, the resulting behavior, linked issues or requirement IDs, and checks performed. Document schema/configuration changes, platform limitations, and measured performance changes. Include screenshots only for visible UI changes.
 
-Keep `.verix/`, local Claude settings, credentials, private source, and real customer session data out of Git. Report vulnerabilities through [SECURITY.md](SECURITY.md). Paid agent trials, publishing releases, and changes to hosted services require explicit authorization; synthetic tests do not satisfy external release gates.
+Keep `.verix/`, local agent hook settings, credentials, private source, and real customer session data out of Git. Report vulnerabilities through [SECURITY.md](SECURITY.md). Paid agent trials, publishing releases, and changes to hosted services require explicit authorization; synthetic tests do not satisfy external release gates.
