@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "session": {
+    "id": "7bdb376b46124985bccb9ecea9880093",
+    "base": "9d221a29740e03e227b70d3fbc66cab968f49df1",
+    "agent": "live-pr-reviewed",
+    "incomplete": 0
+  },
+  "nodes": {
+    "6d10bb91d83e4e06b7538282fbcc1178": {
+      "id": "6d10bb91d83e4e06b7538282fbcc1178",
+      "kind": "observation",
+      "path": "live-pr-fixture/auth.py",
+      "revision": "9d221a29740e03e227b70d3fbc66cab968f49df1",
+      "fingerprint": {
+        "sha256": "d0cd52b01572ccf45d411a8d997661adbbf39aed481c9773d9bbf7ad9d485571",
+        "mode": "100644"
+      },
+      "complete": true
+    },
+    "842acd12e3ed414fbffae17f32ab2ca8": {
+      "id": "842acd12e3ed414fbffae17f32ab2ca8",
+      "kind": "claim",
+      "text": "Claim 842acd12e3ed414fbffae17f32ab2ca8 (text kept locally)",
+      "groups": [
+        [
+          "6d10bb91d83e4e06b7538282fbcc1178"
+        ]
+      ]
+    }
+  }
+}

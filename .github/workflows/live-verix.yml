@@ -6,6 +6,6 @@ permissions:
   pull-requests: write
 jobs:
   check:
-    uses: abdulwasea89/Verix/.github/workflows/verix-pr.yml@208ea406da28230963c7564f77418b332e96b04b
+    uses: abdulwasea89/Verix/.github/workflows/verix-pr.yml@0c60404cfaa8c2ad8e130c4f34e2a9c0c52d0c57
     with:
-      tool-ref: 208ea406da28230963c7564f77418b332e96b04b
+      tool-ref: 0c60404cfaa8c2ad8e130c4f34e2a9c0c52d0c57
