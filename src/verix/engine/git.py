@@ -198,6 +198,13 @@ class Repository:
             if stage != b"0":
                 raise VerixError("Resolve Git index conflicts before checking evidence")
             modes[os.path.normcase(os.fsdecode(path))] = mode.decode()
+        if WINDOWS and paths is not None:
+            missing = {os.path.normcase(path) for path in paths} - modes.keys()
+            if missing:
+                # Literal Git filters can miss case variants on a case-insensitive filesystem.
+                modes.update(
+                    {key: mode for key, mode in self.index_modes().items() if key in missing}
+                )
         return modes
 
     def changes(self, base: str, head: str) -> list[dict]:

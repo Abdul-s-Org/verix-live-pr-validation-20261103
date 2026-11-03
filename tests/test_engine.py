@@ -593,6 +593,19 @@ class EngineTests(unittest.TestCase):
             with self.assertRaises(VerixError):
                 repo.revision()
 
+    def test_windows_mode_filter_preserves_case_insensitive_index_lookup(self):
+        from unittest.mock import patch
+
+        with (
+            patch("verix.engine.git.WINDOWS", True),
+            patch(
+                "verix.engine.git.os.path.normcase",
+                side_effect=lambda value: os.fspath(value).lower(),
+            ),
+        ):
+            self.assertEqual(self.engine.repo.index_modes(["A.PY"]), {"a.py": "100644"})
+            self.assertEqual(self.engine.repo.index_modes(["untracked.py"]), {})
+
 
 if __name__ == "__main__":
     unittest.main()
