@@ -606,6 +606,30 @@ class EngineTests(unittest.TestCase):
             self.assertEqual(self.engine.repo.index_modes(["A.PY"]), {"a.py": "100644"})
             self.assertEqual(self.engine.repo.index_modes(["untracked.py"]), {})
 
+    def test_filtered_mode_query_handles_command_limits_without_hiding_other_errors(self):
+        import errno
+        from unittest.mock import patch
+
+        output = self.engine.repo.git("ls-files", "--stage", "-z")
+        for code in (errno.E2BIG, 206):
+            cause = OSError(errno.E2BIG if code == errno.E2BIG else errno.ENOENT, "too long")
+            if code == 206:
+                cause.winerror = 206
+            error = VerixError("Git failed")
+            error.__cause__ = cause
+            with (
+                self.subTest(code=code),
+                patch.object(self.engine.repo, "git", side_effect=[error, output]) as git,
+            ):
+                self.assertEqual(self.engine.repo.index_modes(["a.py"])["a.py"], "100644")
+                self.assertEqual(git.call_count, 2)
+        error = VerixError("permission denied")
+        error.__cause__ = PermissionError(errno.EACCES, "denied")
+        with patch.object(self.engine.repo, "git", side_effect=error) as git:
+            with self.assertRaises(VerixError):
+                self.engine.repo.index_modes(["a.py"])
+            self.assertEqual(git.call_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

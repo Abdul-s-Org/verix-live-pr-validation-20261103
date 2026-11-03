@@ -1,6 +1,7 @@
 """Git access and content fingerprints without shell interpretation."""
 
 import ast
+import errno
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
@@ -189,8 +190,18 @@ class Repository:
         args = ["ls-files", "--stage", "-z"]
         if paths is not None:
             args.extend(["--", *paths])
+        try:
+            output = self.git(*args)
+        except VerixError as exc:
+            cause = exc.__cause__
+            too_long = isinstance(cause, OSError) and (
+                cause.errno == errno.E2BIG or getattr(cause, "winerror", None) == 206
+            )
+            if paths is not None and too_long:
+                return self.index_modes()
+            raise
         modes = {}
-        for entry in self.git(*args).split(b"\0"):
+        for entry in output.split(b"\0"):
             if not entry:
                 continue
             metadata, path = entry.split(b"\t", 1)
