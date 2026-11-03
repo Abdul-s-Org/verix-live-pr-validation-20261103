@@ -1,0 +1,11 @@
+name: Live Verix validation
+on: [pull_request]
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+jobs:
+  check:
+    uses: abdulwasea89/Verix/.github/workflows/verix-pr.yml@208ea406da28230963c7564f77418b332e96b04b
+    with:
+      tool-ref: 208ea406da28230963c7564f77418b332e96b04b
